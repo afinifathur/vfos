@@ -1,0 +1,322 @@
+[
+    {
+        "id": 1,
+        "category_id": 1,
+        "name": "Salary",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 2,
+        "category_id": 1,
+        "name": "Bonus",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 3,
+        "category_id": 1,
+        "name": "Gift",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 4,
+        "category_id": 2,
+        "name": "Food & Drink",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 5,
+        "category_id": 2,
+        "name": "Transport",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 6,
+        "category_id": 2,
+        "name": "Rent",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 7,
+        "category_id": 2,
+        "name": "Shopping",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 8,
+        "category_id": 3,
+        "name": "Electricity",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 9,
+        "category_id": 3,
+        "name": "Internet",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 10,
+        "category_id": 3,
+        "name": "Water",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 11,
+        "category_id": 4,
+        "name": "makanan",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 12,
+        "category_id": 4,
+        "name": "cemilan",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 13,
+        "category_id": 4,
+        "name": "cafe",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 14,
+        "category_id": 5,
+        "name": "listrik",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 15,
+        "category_id": 5,
+        "name": "gas",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 16,
+        "category_id": 5,
+        "name": "internet",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 17,
+        "category_id": 5,
+        "name": "air",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 18,
+        "category_id": 6,
+        "name": "perawatan",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 19,
+        "category_id": 6,
+        "name": "bensin",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 20,
+        "category_id": 6,
+        "name": "parkir",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 21,
+        "category_id": 6,
+        "name": "umum",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 22,
+        "category_id": 7,
+        "name": "game",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 23,
+        "category_id": 7,
+        "name": "film",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 24,
+        "category_id": 7,
+        "name": "konser",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 25,
+        "category_id": 8,
+        "name": "dokter",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 26,
+        "category_id": 8,
+        "name": "personal care",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 27,
+        "category_id": 8,
+        "name": "obat",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 28,
+        "category_id": 8,
+        "name": "olahraga",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 29,
+        "category_id": 9,
+        "name": "aksesoris",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 30,
+        "category_id": 9,
+        "name": "baju",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 31,
+        "category_id": 9,
+        "name": "elektronik",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 32,
+        "category_id": 10,
+        "name": "tiket",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 33,
+        "category_id": 10,
+        "name": "kebutuhan",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 34,
+        "category_id": 11,
+        "name": "emas",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 35,
+        "category_id": 11,
+        "name": "reksadana",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 36,
+        "category_id": 12,
+        "name": "buku",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 37,
+        "category_id": 12,
+        "name": "fotokopi",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 38,
+        "category_id": 13,
+        "name": "amal",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 39,
+        "category_id": 13,
+        "name": "pernikahan",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 40,
+        "category_id": 13,
+        "name": "pemakaman",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    }
+]

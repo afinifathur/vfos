@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1,
+        "category_id": 4,
+        "month": 2,
+        "year": 2026,
+        "allocated_amount": 1000000,
+        "created_at": "2026-02-26 16:42:31",
+        "updated_at": "2026-02-26 16:42:31",
+        "subcategory_id": null
+    },
+    {
+        "id": 2,
+        "category_id": 4,
+        "month": 2,
+        "year": 2026,
+        "allocated_amount": 500000,
+        "created_at": "2026-02-26 16:42:31",
+        "updated_at": "2026-02-26 16:42:31",
+        "subcategory_id": 11
+    }
+]

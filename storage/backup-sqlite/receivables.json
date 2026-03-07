@@ -1,0 +1,35 @@
+[
+    {
+        "id": 1,
+        "name": "Bayu Pratama",
+        "total_amount": 500000,
+        "remaining_amount": 500000,
+        "due_date": "2026-03-06",
+        "status": "active",
+        "notes": "bayar setelah gajian",
+        "created_at": "2026-03-02 15:56:36",
+        "updated_at": "2026-03-02 15:56:36"
+    },
+    {
+        "id": 2,
+        "name": "Bagus Suryanandika",
+        "total_amount": 1500000,
+        "remaining_amount": 1500000,
+        "due_date": "2026-09-01",
+        "status": "active",
+        "notes": "pinjam teman",
+        "created_at": "2026-03-02 16:06:38",
+        "updated_at": "2026-03-02 16:06:38"
+    },
+    {
+        "id": 3,
+        "name": "Mama",
+        "total_amount": 15000000,
+        "remaining_amount": 15000000,
+        "due_date": "2027-01-01",
+        "status": "active",
+        "notes": "pinjam beli mobil",
+        "created_at": "2026-03-02 16:09:12",
+        "updated_at": "2026-03-02 16:09:12"
+    }
+]

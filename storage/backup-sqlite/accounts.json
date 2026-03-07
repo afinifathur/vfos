@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "name": "BCA (Afin)",
+        "type": "bank",
+        "owner": "afin",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:18",
+        "updated_at": "2026-02-17 11:22:18",
+        "icon_path": null
+    },
+    {
+        "id": 2,
+        "name": "Cash (Afin)",
+        "type": "cash",
+        "owner": "afin",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19",
+        "icon_path": null
+    },
+    {
+        "id": 3,
+        "name": "Gopay (Pacar)",
+        "type": "ewallet",
+        "owner": "pacar",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19",
+        "icon_path": null
+    }
+]

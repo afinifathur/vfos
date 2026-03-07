@@ -1,0 +1,154 @@
+[
+    {
+        "id": 1,
+        "name": "Income",
+        "type": "income",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 2,
+        "name": "Spending",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 3,
+        "name": "Bills",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-17 11:22:19",
+        "updated_at": "2026-02-17 11:22:19"
+    },
+    {
+        "id": 4,
+        "name": "makan",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 5,
+        "name": "bill",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 6,
+        "name": "transportasi",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 7,
+        "name": "hiburan",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 8,
+        "name": "kesehatan",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 9,
+        "name": "belanja",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 10,
+        "name": "travel",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 11,
+        "name": "investasi",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 12,
+        "name": "education",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 13,
+        "name": "donasi",
+        "type": "expense",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 14,
+        "name": "gaji",
+        "type": "income",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 15,
+        "name": "pemberian orang tua",
+        "type": "income",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 16,
+        "name": "bisnis",
+        "type": "income",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 17,
+        "name": "hutang",
+        "type": "income",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 18,
+        "name": "menjual barang",
+        "type": "income",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    },
+    {
+        "id": 19,
+        "name": "hadiah",
+        "type": "income",
+        "is_active": 1,
+        "created_at": "2026-02-26 16:26:36",
+        "updated_at": "2026-02-26 16:26:36"
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "name": "migrations",
+        "seq": 20
+    },
+    {
+        "name": "accounts",
+        "seq": 3
+    },
+    {
+        "name": "categories",
+        "seq": 19
+    },
+    {
+        "name": "subcategories",
+        "seq": 40
+    },
+    {
+        "name": "budgets",
+        "seq": 2
+    },
+    {
+        "name": "investments",
+        "seq": 10
+    },
+    {
+        "name": "transactions",
+        "seq": 4
+    },
+    {
+        "name": "transaction_items",
+        "seq": 4
+    },
+    {
+        "name": "assets",
+        "seq": 5
+    },
+    {
+        "name": "receivables",
+        "seq": 3
+    }
+]
