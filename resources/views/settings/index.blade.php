@@ -249,6 +249,51 @@
                         </div>
                     </div>
                 </section>
+                
+                {{-- Sync DB Lokal - Server --}}
+                <section class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 p-6 mt-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold">Production Sync</h3>
+                            <p class="text-sm text-slate-500">Tarik data terbaru dari Server Production (Veronica @ 192.168.1.50) ke Laragon Lokal</p>
+                        </div>
+                    </div>
+                    
+                    @if(session('sync_log'))
+                        <div class="mb-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                            <p class="text-xs text-rose-400 font-black mb-2 uppercase tracking-widest">Error Logs:</p>
+                            <pre class="text-[10px] text-slate-400 whitespace-pre-wrap max-h-40 overflow-y-auto">{{ session('sync_log') }}</pre>
+                        </div>
+                    @endif
+                    @error('sync')
+                        <div class="mb-4 text-xs font-bold text-rose-500 bg-rose-500/10 p-3 rounded-xl">{{ $message }}</div>
+                    @enderror
+
+                    <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-slate-700 rounded-xl relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                        <div class="relative z-10 flex items-center gap-4">
+                            <div class="size-12 bg-primary/10 text-primary border border-primary/20 rounded-xl flex items-center justify-center shadow-inner">
+                                <span class="material-symbols-outlined text-2xl">cloud_download</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800 dark:text-white text-lg">Pound to Local Docks</p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="material-symbols-outlined text-slate-400 text-sm">dns</span>
+                                    <p class="text-xs font-medium text-slate-500">vfos-db (Prod) ➔ Laragon MySQL</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative z-10">
+                            <form action="{{ route('settings.sync') }}" method="POST" onsubmit="return confirm('Proses ini akan MENGHAPUS/TIMPA data lokal dengan data production terbaru. Jika kamu memiliki data lokal yang belum tersimpan ke server, data tersebut akan HILANG. Lanjutkan?')">
+                                @csrf
+                                <button type="submit" class="flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+                                    <span class="material-symbols-outlined text-[18px]">sync</span>
+                                    Sync Data
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
             </div>
 
             {{-- ── NOTIFICATIONS TAB ───────────────────────────────── --}}

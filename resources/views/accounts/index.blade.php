@@ -79,6 +79,8 @@
             <div class="mt-8 pt-5 border-t border-white/5 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity">
                 <span class="text-[10px] text-slate-500 font-medium">Refreshed {{ $account->updated_at->diffForHumans() }}</span>
                 <div class="flex gap-4">
+                    <a href="{{ route('accounts.reconcile', $account) }}" class="text-[10px] font-black text-slate-400 hover:text-emerald-400 transition-colors uppercase tracking-widest">Penyesuaian</a>
+                    <a href="{{ route('transactions.index', ['account_id' => $account->id]) }}" class="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">Transactions</a>
                     <a href="{{ route('accounts.edit', $account) }}" class="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">Settings</a>
                     <form action="{{ route('accounts.destroy', $account) }}" method="POST" onsubmit="return confirm('Danger! Remove this account and its history?')">
                         @csrf

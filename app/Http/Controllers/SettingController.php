@@ -72,4 +72,27 @@ class SettingController extends Controller
         return redirect()->to(route('settings.index') . '#notifications')
             ->with('success', 'Pengaturan notifikasi berhasil disimpan.');
     }
+
+    public function syncDb()
+    {
+        $scriptPath = base_path('scripts\sync_db.ps1');
+        
+        // Execute the powershell script
+        // Note: this will block the request. Doing it synchronously here as it's a local admin tool.
+        $output = [];
+        $returnVar = 0;
+        
+        exec("powershell.exe -ExecutionPolicy Bypass -File \"$scriptPath\" 2>&1", $output, $returnVar);
+
+        $logPath = storage_path('logs\sync_db_log.txt');
+        $logContent = file_exists($logPath) ? file_get_contents($logPath) : implode("\n", $output);
+
+        if ($returnVar === 0) {
+            return redirect()->to(route('settings.index') . '#integrations')
+                ->with('success', 'Sync Database Production ke Local selesai dengan sukses!');
+        } else {
+            return redirect()->to(route('settings.index') . '#integrations')
+                ->withErrors(['sync' => 'Gagal melakukan sinkronisasi database. Cek log untuk detail.'])->with('sync_log', $logContent);
+        }
+    }
 }

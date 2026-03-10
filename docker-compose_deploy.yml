@@ -1,0 +1,50 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vfos-app
+    container_name: vfos-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - vfos-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: vfos-webserver
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - vfos-network
+
+  db:
+    image: mysql:8.0
+    container_name: vfos-db
+    restart: unless-stopped
+    mem_limit: 1g
+    ports:
+      - "33061:3306"
+    environment:
+      MYSQL_DATABASE: vfos
+      MYSQL_ROOT_PASSWORD: root_password_replace_me
+      MYSQL_PASSWORD: user_password_replace_me
+      MYSQL_USER: vfos_user
+    volumes:
+      - vfos-dbdata:/var/lib/mysql
+    networks:
+      - vfos-network
+
+networks:
+  vfos-network:
+    driver: bridge
+
+volumes:
+  vfos-dbdata:

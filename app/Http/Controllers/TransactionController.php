@@ -22,39 +22,44 @@ class TransactionController extends Controller
             $query->where('notes', 'like', '%' . $request->search . '%');
         }
 
+        if ($request->filled('account_id')) {
+            $query->where('account_id', $request->account_id);
+        }
+
         if ($request->filled('category')) {
             $query->whereHas('transactionItems', function($q) use ($request) {
                 $q->where('category_id', $request->category);
             });
         }
 
-        $transactions = $query->latest('transaction_date')->paginate(15);
+        $transactions = $query->latest('transaction_date')->paginate(15)->appends($request->all());
 
         $currentMonth = now()->month;
         $currentYear  = now()->year;
 
-        $monthlyIncome = Transaction::whereHas('account', fn($q) => $q->where('user_id', $userId))
-            ->where('type', 'income')
+        $baseSummaryQuery = Transaction::whereHas('account', fn($q) => $q->where('user_id', $userId))
             ->whereMonth('transaction_date', $currentMonth)
-            ->whereYear('transaction_date', $currentYear)
-            ->sum('total_amount');
+            ->whereYear('transaction_date', $currentYear);
 
-        $monthlyExpense = Transaction::whereHas('account', fn($q) => $q->where('user_id', $userId))
-            ->where('type', 'expense')
-            ->whereMonth('transaction_date', $currentMonth)
-            ->whereYear('transaction_date', $currentYear)
-            ->sum('total_amount');
+        if ($request->filled('account_id')) {
+            $baseSummaryQuery->where('account_id', $request->account_id);
+        }
+
+        $monthlyIncome = (clone $baseSummaryQuery)->where('type', 'income')->sum('total_amount');
+        $monthlyExpense = (clone $baseSummaryQuery)->where('type', 'expense')->sum('total_amount');
 
         $netSavings = $monthlyIncome - $monthlyExpense;
 
         $categories = Category::where('user_id', $userId)->get();
+        $accounts = Account::where('user_id', $userId)->get();
 
         return view('transactions.index', compact(
             'transactions',
             'monthlyIncome',
             'monthlyExpense',
             'netSavings',
-            'categories'
+            'categories',
+            'accounts'
         ));
     }
 

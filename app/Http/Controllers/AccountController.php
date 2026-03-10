@@ -88,4 +88,55 @@ class AccountController extends Controller
         $account->delete();
         return redirect()->route('accounts.index')->with('success', 'Account deleted successfully.');
     }
+
+    public function reconcile(Account $account)
+    {
+        abort_if($account->user_id !== auth()->id(), 403);
+        $categories = \App\Models\Category::where('user_id', auth()->id())->where('is_active', true)->get();
+        return view('accounts.reconcile', compact('account', 'categories'));
+    }
+
+    public function processReconcile(Request $request, Account $account)
+    {
+        abort_if($account->user_id !== auth()->id(), 403);
+
+        $validated = $request->validate([
+            'actual_balance' => 'required|numeric',
+            'category_id'    => 'required|exists:categories,id',
+            'notes'          => 'nullable|string'
+        ]);
+
+        $currentBalance = $account->total_balance;
+        $actualBalance  = $validated['actual_balance'];
+
+        $difference = $actualBalance - $currentBalance;
+
+        if (abs($difference) > 0.01) {
+            $type = $difference > 0 ? 'income' : 'expense';
+            $amount = abs($difference);
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($account, $type, $amount, $validated) {
+                $transaction = \App\Models\Transaction::create([
+                    'account_id'       => $account->id,
+                    'type'             => $type,
+                    'transaction_date' => now()->toDateString(),
+                    'total_amount'     => $amount,
+                    'notes'            => $validated['notes'] ?: 'Account Reconciliation (Opname)',
+                ]);
+
+                $transaction->transactionItems()->create([
+                    'category_id' => $validated['category_id'],
+                    'amount'      => $amount,
+                    'description' => 'System Balance Adjustment',
+                ]);
+
+                $account->update(['total_balance' => $account->total_balance + ($type === 'income' ? $amount : -$amount)]);
+            });
+            
+            return redirect()->route('accounts.index')->with('success', 'Account reconciled and transaction created.');
+        }
+
+        $account->touch(); // Update `updated_at` only if no difference
+        return redirect()->route('accounts.index')->with('success', 'Account is already balanced. Last checked timestamp updated.');
+    }
 }

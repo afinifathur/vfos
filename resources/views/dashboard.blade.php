@@ -171,11 +171,42 @@
         </div>
     </div>
 </div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+    <!-- Expenses by Category Donut Chart -->
+    <div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center">
+        <div class="flex items-center justify-between w-full mb-6">
+            <div>
+                <h3 class="text-base font-bold dark:text-white">Expenses by Category</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">This month</p>
+            </div>
+        </div>
+        <div class="h-64 w-full relative">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Expenses by Subcategory Donut Chart -->
+    <div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center">
+        <div class="flex items-center justify-between w-full mb-6">
+            <div>
+                <h3 class="text-base font-bold dark:text-white">Expenses by Subcategory</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">This month</p>
+            </div>
+        </div>
+        <div class="h-64 w-full relative">
+            <canvas id="subcategoryChart"></canvas>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script>
+Chart.register(ChartDataLabels);
+
 document.addEventListener('DOMContentLoaded', function () {
     const isDark = document.documentElement.classList.contains('dark');
     const gridColor   = isDark ? 'rgba(51,65,85,0.5)'  : 'rgba(226,232,240,0.8)';
@@ -274,6 +305,126 @@ document.addEventListener('DOMContentLoaded', function () {
             },
         },
     });
+
+    // Donut Chart Data
+    const donutCategoryLabels = @json($donutCategoryLabels);
+    const donutCategoryData   = @json($donutCategoryData);
+
+    const donutSubcategoryLabels = @json($donutSubcategoryLabels);
+    const donutSubcategoryData   = @json($donutSubcategoryData);
+
+    // Reusable colors for Donut Chart
+    const donutColors = [
+        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'
+    ];
+
+    // Category Chart
+    if (donutCategoryData.length > 0) {
+        new Chart(document.getElementById('categoryChart').getContext('2d'), {
+            type: 'doughnut',
+            plugins: [ChartDataLabels],
+            data: {
+                labels: donutCategoryLabels,
+                datasets: [{
+                    data: donutCategoryData,
+                    backgroundColor: donutColors,
+                    borderWidth: isDark ? 2 : 1,
+                    borderColor: isDark ? '#1e293b' : '#ffffff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: labelColor, usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        backgroundColor: tooltipBg, titleColor: tooltipText, bodyColor: labelColor,
+                        borderColor: isDark ? '#334155' : '#e2e8f0', borderWidth: 1, padding: 12, cornerRadius: 10,
+                        callbacks: { label: ctx => ' ' + ctx.label + ': ' + fmtRp(ctx.parsed) }
+                    },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            const total = ctx.chart.data.datasets[0].data.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+                            const percentage = ((parseFloat(value) / total) * 100).toFixed(1) + '%';
+                            return percentage === '0.0%' ? '' : percentage;
+                        },
+                        color: '#ffffff',
+                        font: { weight: 'bold', size: 10 },
+                        textShadowBlur: 4,
+                        textShadowColor: 'rgba(0,0,0,0.5)',
+                        display: function(context) {
+                            var dataset = context.dataset;
+                            var value = parseFloat(dataset.data[context.dataIndex]);
+                            // Only show if the slice is large enough, or just show all > 5%
+                            const total = dataset.data.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+                            return (value / total) > 0.04; // hide label if slice < 4%
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        const catCanvas = document.getElementById('categoryChart');
+        catCanvas.parentElement.innerHTML = '<div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400"><span class="material-symbols-outlined text-4xl mb-2 opacity-50">pie_chart</span><p class="text-sm">No expenses yet</p></div>';
+    }
+
+    // Subcategory Chart
+    if (donutSubcategoryData.length > 0) {
+        new Chart(document.getElementById('subcategoryChart').getContext('2d'), {
+            type: 'doughnut',
+            plugins: [ChartDataLabels],
+            data: {
+                labels: donutSubcategoryLabels,
+                datasets: [{
+                    data: donutSubcategoryData,
+                    backgroundColor: donutColors,
+                    borderWidth: isDark ? 2 : 1,
+                    borderColor: isDark ? '#1e293b' : '#ffffff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: labelColor, usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        backgroundColor: tooltipBg, titleColor: tooltipText, bodyColor: labelColor,
+                        borderColor: isDark ? '#334155' : '#e2e8f0', borderWidth: 1, padding: 12, cornerRadius: 10,
+                        callbacks: { label: ctx => ' ' + ctx.label + ': ' + fmtRp(ctx.parsed) }
+                    },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            const total = ctx.chart.data.datasets[0].data.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+                            const percentage = ((parseFloat(value) / total) * 100).toFixed(1) + '%';
+                            return percentage === '0.0%' ? '' : percentage;
+                        },
+                        color: '#ffffff',
+                        font: { weight: 'bold', size: 10 },
+                        textShadowBlur: 4,
+                        textShadowColor: 'rgba(0,0,0,0.5)',
+                        display: function(context) {
+                            var dataset = context.dataset;
+                            var value = parseFloat(dataset.data[context.dataIndex]);
+                            const total = dataset.data.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+                            return (value / total) > 0.04; // hide label if slice < 4%
+                        }
+                    }
+                }
+            }
+        });
+    }  else {
+        const subCanvas = document.getElementById('subcategoryChart');
+        subCanvas.parentElement.innerHTML = '<div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400"><span class="material-symbols-outlined text-4xl mb-2 opacity-50">pie_chart</span><p class="text-sm">No expenses yet</p></div>';
+    }
 });
 </script>
 @endpush

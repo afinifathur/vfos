@@ -106,6 +106,38 @@ class DashboardController extends Controller
             $chartSavings[] = round($inc - $exp);
         }
 
+        // ── Expenses by Category (Donut Chart) ────────────────────────────────
+        $expenseByCategory = TransactionItem::selectRaw('categories.name as label, sum(transaction_items.amount) as total')
+            ->join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
+            ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
+            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
+            ->where('transactions.type', 'expense')
+            ->where('accounts.user_id', $userId)
+            ->whereMonth('transactions.transaction_date', $currentMonth)
+            ->whereYear('transactions.transaction_date', $currentYear)
+            ->groupBy('categories.name')
+            ->orderByDesc('total')
+            ->get();
+
+        $donutCategoryLabels = $expenseByCategory->pluck('label')->toArray();
+        $donutCategoryData   = $expenseByCategory->pluck('total')->toArray();
+
+        // ── Expenses by Subcategory (Donut Chart) ─────────────────────────────
+        $expenseBySubcategory = TransactionItem::selectRaw("COALESCE(subcategories.name, 'Uncategorized') as label, sum(transaction_items.amount) as total")
+            ->join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
+            ->leftJoin('subcategories', 'subcategories.id', '=', 'transaction_items.subcategory_id')
+            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
+            ->where('transactions.type', 'expense')
+            ->where('accounts.user_id', $userId)
+            ->whereMonth('transactions.transaction_date', $currentMonth)
+            ->whereYear('transactions.transaction_date', $currentYear)
+            ->groupBy('label')
+            ->orderByDesc('total')
+            ->get();
+
+        $donutSubcategoryLabels = $expenseBySubcategory->pluck('label')->toArray();
+        $donutSubcategoryData   = $expenseBySubcategory->pluck('total')->toArray();
+
         return view('dashboard', compact(
             'netWorth',
             'monthlyIncome',
@@ -116,7 +148,11 @@ class DashboardController extends Controller
             'chartLabels',
             'chartIncome',
             'chartExpense',
-            'chartSavings'
+            'chartSavings',
+            'donutCategoryLabels',
+            'donutCategoryData',
+            'donutSubcategoryLabels',
+            'donutSubcategoryData'
         ));
     }
 }

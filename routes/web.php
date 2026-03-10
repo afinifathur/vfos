@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::get('wealth-statement', [WealthStatementController::class, 'index'])->name('wealth-statement');
     Route::get('wealth-statement/pdf', [WealthStatementController::class, 'pdf'])->name('wealth-statement.pdf');
 
+    Route::get('accounts/{account}/reconcile', [AccountController::class, 'reconcile'])->name('accounts.reconcile');
+    Route::post('accounts/{account}/reconcile', [AccountController::class, 'processReconcile'])->name('accounts.processReconcile');
     Route::resource('accounts', AccountController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('subcategories', SubcategoryController::class);
@@ -44,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/preferences', [SettingController::class, 'updatePreferences'])->name('settings.preferences');
     Route::post('settings/security', [SettingController::class, 'updateSecurity'])->name('settings.security');
     Route::post('settings/notifications', [SettingController::class, 'updateNotifications'])->name('settings.notifications');
+    Route::post('settings/sync-db', [SettingController::class, 'syncDb'])->name('settings.sync');
 
     Route::post('investments/refresh', [InvestmentController::class, 'refresh'])->name('investments.refresh');
     Route::post('investments/{investment}/refresh-item', [InvestmentController::class, 'refreshItem'])->name('investments.refresh-item');
