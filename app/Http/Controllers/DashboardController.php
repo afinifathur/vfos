@@ -81,7 +81,7 @@ class DashboardController extends Controller
         $chartSavings = [];
 
         for ($i = 11; $i >= 0; $i--) {
-            $date  = now()->subMonths($i);
+            $date  = now()->startOfMonth()->subMonths($i);
             $m     = $date->month;
             $y     = $date->year;
 
