@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasOwner;
+
 class Category extends Model
 {
     /** @use HasFactory<\Database\Factories\CategoryFactory> */
-    use HasFactory;
+    use HasFactory, HasOwner;
 
-    protected $fillable = ['user_id', 'name', 'type', 'is_active'];
+    protected $fillable = ['user_id', 'owner', 'name', 'type', 'is_active', 'is_ignored'];
 
     public function user()
     {

@@ -9,16 +9,13 @@ class DebtController extends Controller
 {
     public function index()
     {
-        $userId = auth()->id();
-
-        $debts = Debt::where('user_id', $userId)->where('status', 'active')->latest()->get();
+        $debts = Debt::where('status', 'active')->latest()->get();
 
         $totalDebtAmount   = $debts->sum('remaining_amount');
         $totalOriginalAmount = $debts->sum('total_amount');
         $totalPrincipalPaid  = $totalOriginalAmount - $totalDebtAmount;
 
-        $upcomingPayments = Debt::where('user_id', $userId)
-            ->where('status', 'active')
+        $upcomingPayments = Debt::where('status', 'active')
             ->whereNotNull('due_date')
             ->orderBy('due_date', 'asc')
             ->take(5)
@@ -44,6 +41,7 @@ class DebtController extends Controller
     {
         $validated = $request->validate([
             'name'             => 'required',
+            'owner'            => 'required|in:afin,pacar,business',
             'total_amount'     => 'required|numeric',
             'remaining_amount' => 'required|numeric',
             'due_date'         => 'nullable|date',
@@ -58,16 +56,15 @@ class DebtController extends Controller
 
     public function edit(Debt $debt)
     {
-        abort_if($debt->user_id !== auth()->id(), 403);
         return view('debts.edit', compact('debt'));
     }
 
     public function update(Request $request, Debt $debt)
     {
-        abort_if($debt->user_id !== auth()->id(), 403);
 
         $validated = $request->validate([
             'name'             => 'required',
+            'owner'            => 'required|in:afin,pacar,business',
             'total_amount'     => 'required|numeric',
             'remaining_amount' => 'required|numeric',
             'due_date'         => 'nullable|date',
@@ -81,7 +78,6 @@ class DebtController extends Controller
 
     public function destroy(Debt $debt)
     {
-        abort_if($debt->user_id !== auth()->id(), 403);
         $debt->delete();
         return redirect()->route('debts.index')->with('success', 'Debt deleted successfully.');
     }

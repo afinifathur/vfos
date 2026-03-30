@@ -19,20 +19,20 @@ class DashboardController extends Controller
         $currentYear  = now()->year;
 
         // ── Net Worth ──────────────────────────────────────────────────────────
-        $accounts = Account::where('user_id', $userId)->get();
+        $accounts = Account::all();
         $netWorth = $accounts->sum(fn($a) => $a->calculateBalance());
 
         // ── This Month Income & Expense ───────────────────────────────────────
-        $monthlyIncome = Transaction::whereHas('account', fn($q) => $q->where('user_id', $userId))
-            ->where('type', 'income')
+        $monthlyIncome = Transaction::where('type', 'income')
             ->whereMonth('transaction_date', $currentMonth)
             ->whereYear('transaction_date',  $currentYear)
+            ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
             ->sum('total_amount');
 
-        $monthlyExpense = Transaction::whereHas('account', fn($q) => $q->where('user_id', $userId))
-            ->where('type', 'expense')
+        $monthlyExpense = Transaction::where('type', 'expense')
             ->whereMonth('transaction_date', $currentMonth)
             ->whereYear('transaction_date',  $currentYear)
+            ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
             ->sum('total_amount');
 
         $savingRate = $monthlyIncome > 0
@@ -41,19 +41,17 @@ class DashboardController extends Controller
 
         // ── Recent Transactions ───────────────────────────────────────────────
         $recentTransactions = Transaction::with(['account', 'transactionItems.category'])
-            ->whereHas('account', fn($q) => $q->where('user_id', $userId))
             ->latest('transaction_date')
             ->limit(5)
             ->get();
 
         // ── Budget vs Actual ─────────────────────────────────────────────────
-        $budgets = Category::where('user_id', $userId)
-            ->where('type', 'expense')
-            ->with(['transactionItems' => function($q) use ($currentMonth, $currentYear, $userId) {
-                $q->whereHas('transaction', function($query) use ($currentMonth, $currentYear, $userId) {
+        // ── Budget vs Actual ─────────────────────────────────────────────────
+        $budgets = Category::where('type', 'expense')
+            ->with(['transactionItems' => function($q) use ($currentMonth, $currentYear) {
+                $q->whereHas('transaction', function($query) use ($currentMonth, $currentYear) {
                     $query->whereMonth('transaction_date', $currentMonth)
-                          ->whereYear('transaction_date',  $currentYear)
-                          ->whereHas('account', fn($aq) => $aq->where('user_id', $userId));
+                          ->whereYear('transaction_date',  $currentYear);
                 });
             }])
             ->get()
@@ -89,16 +87,16 @@ class DashboardController extends Controller
 
             $chartLabels[] = $date->format('M Y');
 
-            $inc = Transaction::whereHas('account', fn($q) => $q->where('user_id', $userId))
-                ->where('type', 'income')
+            $inc = Transaction::where('type', 'income')
                 ->whereMonth('transaction_date', $m)
                 ->whereYear('transaction_date',  $y)
+                ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
                 ->sum('total_amount');
 
-            $exp = Transaction::whereHas('account', fn($q) => $q->where('user_id', $userId))
-                ->where('type', 'expense')
+            $exp = Transaction::where('type', 'expense')
                 ->whereMonth('transaction_date', $m)
                 ->whereYear('transaction_date',  $y)
+                ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
                 ->sum('total_amount');
 
             $chartIncome[]  = round($inc);
@@ -112,7 +110,7 @@ class DashboardController extends Controller
             ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
             ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
             ->where('transactions.type', 'expense')
-            ->where('accounts.user_id', $userId)
+            ->where('categories.is_ignored', false)
             ->whereMonth('transactions.transaction_date', $currentMonth)
             ->whereYear('transactions.transaction_date', $currentYear)
             ->groupBy('categories.name')
@@ -126,9 +124,9 @@ class DashboardController extends Controller
         $expenseBySubcategory = TransactionItem::selectRaw("COALESCE(subcategories.name, 'Uncategorized') as label, sum(transaction_items.amount) as total")
             ->join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
             ->leftJoin('subcategories', 'subcategories.id', '=', 'transaction_items.subcategory_id')
-            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
+            ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
             ->where('transactions.type', 'expense')
-            ->where('accounts.user_id', $userId)
+            ->where('categories.is_ignored', false)
             ->whereMonth('transactions.transaction_date', $currentMonth)
             ->whereYear('transactions.transaction_date', $currentYear)
             ->groupBy('label')

@@ -13,12 +13,26 @@
         <form action="{{ route('assets.store') }}" method="POST" class="space-y-6">
             @csrf
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Name -->
                 <div>
                     <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Asset Name</label>
                     <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" placeholder="e.g. House (Property)">
                 </div>
+
+                <!-- Owner (Admin Only) -->
+                @if(auth()->user()->role === 'admin')
+                <div>
+                    <label for="owner" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Primary Owner</label>
+                    <select name="owner" id="owner" required class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+                        <option value="afin">Afin</option>
+                        <option value="pacar">Pacar</option>
+                        <option value="business">Business</option>
+                    </select>
+                </div>
+                @else
+                    <input type="hidden" name="owner" value="{{ auth()->user()->role === 'partner' ? 'pacar' : (auth()->user()->role === 'business' ? 'business' : 'afin') }}">
+                @endif
 
                 <!-- Description -->
                 <div>

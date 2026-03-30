@@ -63,9 +63,13 @@
                     <span class="material-symbols-outlined {{ request()->is('/') ? '' : 'group-hover:text-primary' }}">dashboard</span>
                     <span class="text-sm">Dashboard</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('wealth-statement') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('wealth-statement') }}">
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('wealth-statement*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('wealth-statement') }}">
                     <span class="material-symbols-outlined {{ request()->is('wealth-statement') ? '' : 'group-hover:text-primary' }}">description</span>
                     <span class="text-sm">Wealth Statement</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('profit-loss*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('profit-loss') }}">
+                    <span class="material-symbols-outlined {{ request()->is('profit-loss') ? '' : 'group-hover:text-primary' }}">receipt_long</span>
+                    <span class="text-sm">Profit & Loss</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('transactions*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/transactions">
                     <span class="material-symbols-outlined {{ request()->is('transactions*') ? '' : 'group-hover:text-primary' }}">swap_horiz</span>
@@ -78,6 +82,10 @@
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('accounts*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/accounts">
                     <span class="material-symbols-outlined {{ request()->is('accounts*') ? '' : 'group-hover:text-primary' }}">account_balance</span>
                     <span class="text-sm">Accounts</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('goals*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/goals">
+                    <span class="material-symbols-outlined {{ request()->is('goals*') ? '' : 'group-hover:text-primary' }}">flag</span>
+                    <span class="text-sm">Goals</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('budgets*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/budgets">
                     <span class="material-symbols-outlined {{ request()->is('budgets*') ? '' : 'group-hover:text-primary' }}">pie_chart</span>

@@ -46,11 +46,22 @@
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">category</span>
                     <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
                 </div>
-                <div class="relative">
-                    <button type="button" class="flex items-center gap-2 bg-slate-50 dark:bg-[#223149] text-sm rounded-lg px-4 py-2.5 text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2d3d5a] transition-colors">
+                <div class="relative" id="date_range_wrapper">
+                    <input type="hidden" name="start_date" id="start_date" value="{{ request('start_date', now()->startOfMonth()->toDateString()) }}">
+                    <input type="hidden" name="end_date" id="end_date" value="{{ request('end_date', now()->endOfMonth()->toDateString()) }}">
+                    
+                    <button type="button" id="date_range_picker_btn" class="flex items-center gap-2 bg-slate-50 dark:bg-[#223149] text-sm rounded-lg px-4 py-2.5 text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2d3d5a] transition-colors border-none outline-none">
                         <span class="material-symbols-outlined !text-lg">calendar_month</span>
-                        <span>{{ now()->startOfMonth()->format('M d, Y') }} - {{ now()->endOfMonth()->format('M d, Y') }}</span>
+                        <span id="date_display">
+                            @if(request('start_date') && request('end_date'))
+                                {{ \Carbon\Carbon::parse(request('start_date'))->format('M d, Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d, Y') }}
+                            @else
+                                {{ now()->startOfMonth()->format('M d, Y') }} - {{ now()->endOfMonth()->format('M d, Y') }}
+                            @endif
+                        </span>
                     </button>
+                    {{-- Invisible input for Flatpickr trigger --}}
+                    <input type="text" id="flatpickr_hidden" class="absolute inset-0 opacity-0 pointer-events-none">
                 </div>
                 <button type="button" class="p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                     <span class="material-symbols-outlined">filter_list</span>
@@ -185,4 +196,65 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const dateDisplay = document.getElementById('date_display');
+    const pickerBtn = document.getElementById('date_range_picker_btn');
+    const hiddenTrigger = document.getElementById('flatpickr_hidden');
+    const form = startDateInput.closest('form');
+
+    const fp = flatpickr(hiddenTrigger, {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        defaultDate: [startDateInput.value, endDateInput.value],
+        positionElement: pickerBtn,
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length === 2) {
+                const start = instance.formatDate(selectedDates[0], "Y-m-d");
+                const end = instance.formatDate(selectedDates[1], "Y-m-d");
+                
+                // Only submit if dates changed or we have both
+                startDateInput.value = start;
+                endDateInput.value = end;
+                
+                // Show a brief moment before submitting for better UX
+                setTimeout(() => {
+                    form.submit();
+                }, 100);
+            }
+        }
+    });
+
+    pickerBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent any accidental submit
+        fp.open();
+    });
+});
+</script>
+
+<style>
+    /* Custom Flatpickr Dark Theme Overrides */
+    .flatpickr-calendar.dark {
+        background: #1a2333;
+        border-color: #334155;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    }
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+        background: #3c83f6 !important;
+        border-color: #3c83f6 !important;
+    }
+    .flatpickr-day.inRange {
+        background: rgba(60, 131, 246, 0.2) !important;
+        box-shadow: -5px 0 0 rgba(60, 131, 246, 0.2), 5px 0 0 rgba(60, 131, 246, 0.2) !important;
+    }
+</style>
+@endpush
 @endsection

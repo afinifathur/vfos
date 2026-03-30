@@ -59,6 +59,33 @@
                 </div>
             </div>
 
+            <!-- Goal Connection -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="goal_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Link to Sinking Fund Goal (Optional)</label>
+                    <select name="goal_id" id="goal_id" class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+                        <option value="">-- No specific goal --</option>
+                        @foreach($goals as $goal)
+                            <option value="{{ $goal->id }}" {{ $investment->goal_id == $goal->id ? 'selected' : '' }}>{{ $goal->name }} (Target: Rp {{ number_format($goal->target_amount, 0, ',', '.') }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if(auth()->user()->role === 'admin')
+                <div>
+                    <label for="owner" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Primary Owner</label>
+                    <select name="owner" id="owner" class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+                        <option value="afin" {{ $investment->owner === 'afin' ? 'selected' : '' }}>Afin</option>
+                        <option value="pacar" {{ $investment->owner === 'pacar' ? 'selected' : '' }}>Pacar</option>
+                        <option value="business" {{ $investment->owner === 'business' ? 'selected' : '' }}>Business</option>
+                    </select>
+                </div>
+                @else
+                    <input type="hidden" name="owner" value="{{ $investment->owner }}">
+                @endif
+            </div>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">If linked, this asset's market value will automatically track progress for the selected goal.</p>
+
             <!-- Currency & Unit (visible for non-Mutual Fund) -->
             <div id="currency-fields" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>

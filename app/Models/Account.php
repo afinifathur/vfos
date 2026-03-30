@@ -6,16 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Transaction;
 
+use App\Traits\HasOwner;
+
 class Account extends Model
 {
     /** @use HasFactory<\Database\Factories\AccountFactory> */
-    use HasFactory;
+    use HasFactory, HasOwner;
 
-    protected $fillable = ['user_id', 'name', 'type', 'owner', 'is_active', 'icon_path', 'initial_balance', 'total_balance'];
+    protected $fillable = ['user_id', 'name', 'type', 'owner', 'is_active', 'goal_id', 'icon_path', 'initial_balance', 'total_balance'];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function goal()
+    {
+        return $this->belongsTo(Goal::class);
     }
 
     public function calculateBalance()

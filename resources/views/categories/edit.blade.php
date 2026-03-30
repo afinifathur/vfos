@@ -62,6 +62,24 @@
                 </label>
             </div>
 
+            <!-- Ignored from Cashflow Status -->
+            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+                        <span class="material-symbols-outlined">visibility_off</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-900 dark:text-white">Exclude from Cashflow</p>
+                        <p class="text-xs text-slate-500">Transactions with this category won't be calculated in your Dashboard Income/Expense.</p>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="hidden" name="is_ignored" value="0">
+                    <input type="checkbox" name="is_ignored" value="1" class="sr-only peer" {{ $category->is_ignored ? 'checked' : '' }}>
+                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+            </div>
+
             <div class="flex items-center justify-end gap-4 pt-4">
                 <a href="{{ route('categories.index') }}" class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Cancel</a>
                 <button type="submit" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/20">

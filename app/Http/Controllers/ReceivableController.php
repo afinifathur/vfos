@@ -10,9 +10,8 @@ class ReceivableController extends Controller
 {
     public function index()
     {
-        $userId      = auth()->id();
-        $receivables = Receivable::where('user_id', $userId)->where('status', 'active')->latest()->get();
-        $allReceivables = Receivable::where('user_id', $userId)->get();
+        $receivables = Receivable::where('status', 'active')->latest()->get();
+        $allReceivables = Receivable::all();
 
         $totalOutstanding = $receivables->sum('remaining_amount');
 
@@ -67,6 +66,7 @@ class ReceivableController extends Controller
     {
         $validated = $request->validate([
             'name'             => 'required',
+            'owner'            => 'required|in:afin,pacar,business',
             'total_amount'     => 'required|numeric',
             'remaining_amount' => 'required|numeric',
             'due_date'         => 'nullable|date',
@@ -81,16 +81,15 @@ class ReceivableController extends Controller
 
     public function edit(Receivable $receivable)
     {
-        abort_if($receivable->user_id !== auth()->id(), 403);
         return view('receivables.edit', compact('receivable'));
     }
 
     public function update(Request $request, Receivable $receivable)
     {
-        abort_if($receivable->user_id !== auth()->id(), 403);
 
         $validated = $request->validate([
             'name'             => 'required',
+            'owner'            => 'required|in:afin,pacar,business',
             'total_amount'     => 'required|numeric',
             'remaining_amount' => 'required|numeric',
             'due_date'         => 'nullable|date',
@@ -104,7 +103,6 @@ class ReceivableController extends Controller
 
     public function destroy(Receivable $receivable)
     {
-        abort_if($receivable->user_id !== auth()->id(), 403);
         $receivable->delete();
         return redirect()->route('receivables.index')->with('success', 'Receivable deleted successfully.');
     }

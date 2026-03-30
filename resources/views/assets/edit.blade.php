@@ -25,12 +25,26 @@
             @csrf
             @method('PUT')
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Name -->
                 <div>
                     <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Asset Name</label>
                     <input type="text" name="name" id="name" value="{{ $asset->name }}" required class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
                 </div>
+
+                <!-- Owner (Admin Only) -->
+                @if(auth()->user()->role === 'admin')
+                <div>
+                    <label for="owner" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Primary Owner</label>
+                    <select name="owner" id="owner" required class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+                        <option value="afin" {{ $asset->owner === 'afin' ? 'selected' : '' }}>Afin</option>
+                        <option value="pacar" {{ $asset->owner === 'pacar' ? 'selected' : '' }}>Pacar</option>
+                        <option value="business" {{ $asset->owner === 'business' ? 'selected' : '' }}>Business</option>
+                    </select>
+                </div>
+                @else
+                    <input type="hidden" name="owner" value="{{ $asset->owner }}">
+                @endif
 
                 <!-- Description -->
                 <div>

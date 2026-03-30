@@ -105,6 +105,7 @@
                             </div>
 
                             <!-- Owner -->
+                            @if(auth()->user()->role === 'admin')
                             <div class="space-y-2">
                                 <label for="owner" class="text-xs font-black text-slate-500 uppercase tracking-widest">Primary Owner</label>
                                 <div class="relative">
@@ -115,12 +116,16 @@
                                         class="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none appearance-none transition-all text-white font-medium">
                                         <option value="afin">Afin</option>
                                         <option value="pacar">Pacar</option>
+                                        <option value="business">Business</option>
                                     </select>
                                     <span class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-500">
                                         <span class="material-symbols-outlined text-lg">expand_more</span>
                                     </span>
                                 </div>
                             </div>
+                            @else
+                                <input type="hidden" name="owner" value="{{ auth()->user()->role === 'partner' ? 'pacar' : (auth()->user()->role === 'business' ? 'business' : 'afin') }}">
+                            @endif
                             <!-- Initial Balance -->
                             <div class="space-y-2">
                                 <label for="initial_balance" class="text-xs font-black text-slate-500 uppercase tracking-widest">Initial Balance</label>
@@ -132,6 +137,26 @@
                                         class="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-white font-medium"
                                         placeholder="0.00">
                                 </div>
+                            </div>
+
+                            <!-- Goal Connection -->
+                            <div class="md:col-span-2 space-y-2">
+                                <label for="goal_id" class="text-xs font-black text-slate-500 uppercase tracking-widest">Link to Sinking Fund Goal (Optional)</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500">
+                                        <span class="material-symbols-outlined text-lg">flag</span>
+                                    </span>
+                                    <select name="goal_id" id="goal_id" class="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none appearance-none transition-all text-white font-medium">
+                                        <option value="">-- No specific goal --</option>
+                                        @foreach($goals as $goal)
+                                            <option value="{{ $goal->id }}">{{ $goal->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-500">
+                                        <span class="material-symbols-outlined text-lg">expand_more</span>
+                                    </span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 font-medium">If linked, this account's balance will be counted towards the goal's progress.</p>
                             </div>
                         </div>
                     </div>

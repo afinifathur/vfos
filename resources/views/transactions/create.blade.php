@@ -98,51 +98,51 @@
                                     <span class="material-symbols-outlined text-3xl">arrow_forward</span>
                                 </div>
 
-                                <!-- Destination Account -->
+                                <!-- Destination Account (Custom Dark Dropdown) -->
                                 <div id="destination_account_wrapper" class="flex-1 space-y-2 hidden transition-all duration-300">
-                                    <label for="to_account_id" class="text-xs font-black text-primary uppercase tracking-widest">To Account (Destination)</label>
-                                    <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-primary">
-                                            <span class="material-symbols-outlined text-lg">account_balance</span>
-                                        </span>
-                                        <select name="to_account_id" id="to_account_id"
-                                            class="w-full pl-11 pr-4 py-3 bg-primary/10 border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none appearance-none transition-all text-white font-medium">
-                                            <option value="">Select Destination</option>
-                                            @foreach($accounts as $account)
-                                                <option value="{{ $account->id }}" {{ old('to_account_id') == $account->id ? 'selected' : '' }}>{{ $account->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <span class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary">
-                                            <span class="material-symbols-outlined text-lg">expand_more</span>
-                                        </span>
+                                    <label class="text-xs font-black text-primary uppercase tracking-widest">To Account (Destination)</label>
+                                    {{-- Hidden real input for form submission --}}
+                                    <input type="hidden" name="to_account_id" id="to_account_id" value="{{ old('to_account_id') }}">
+                                    <div class="relative" id="to_account_dropdown">
+                                        {{-- Trigger Button --}}
+                                        <button type="button" id="to_account_trigger"
+                                            class="w-full flex items-center gap-3 pl-4 pr-4 py-2.5 bg-slate-900/50 border border-primary/30 rounded-xl text-white font-medium transition-all hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                                            <span class="text-primary material-symbols-outlined text-lg flex-shrink-0">account_balance</span>
+                                            <span id="to_account_label" class="flex-1 text-left text-slate-400 truncate">Select Destination</span>
+                                            <span class="material-symbols-outlined text-primary text-lg flex-shrink-0 transition-transform duration-200" id="to_account_chevron">expand_more</span>
+                                        </button>
+                                        {{-- Dropdown Panel --}}
+                                        <div id="to_account_panel"
+                                            class="absolute z-50 mt-2 w-full bg-slate-900 border border-primary/20 rounded-xl shadow-2xl shadow-black/40 overflow-hidden hidden">
+                                            <div class="max-h-56 overflow-y-auto custom-scrollbar">
+                                                @foreach($accounts as $account)
+                                                <button type="button"
+                                                    data-value="{{ $account->id }}"
+                                                    data-label="{{ $account->name }}"
+                                                    class="to-account-option w-full flex items-center gap-3 px-4 py-1.5 text-left text-sm font-medium text-slate-300 hover:bg-primary/10 hover:text-white transition-colors">
+                                                    <span class="material-symbols-outlined text-base text-slate-500">account_balance</span>
+                                                    {{ $account->name }}
+                                                </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Total Amount Display -->
+                        <!-- Total Amount (auto-calculated, read-only) -->
                         <div class="md:col-span-2 space-y-2">
-                            <label for="total_amount" class="text-xs font-black text-slate-500 uppercase tracking-widest">Total Amount</label>
+                            <label class="text-xs font-black text-slate-500 uppercase tracking-widest">Total Amount</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 font-bold text-xl">Rp</span>
-                                <input type="number" step="0.01" name="total_amount" id="total_amount" value="{{ old('total_amount') }}" required
-                                    class="w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-white font-black text-3xl placeholder:text-slate-800" 
-                                    placeholder="0">
+                                <div id="total_display" class="w-full pl-12 pr-4 py-4 bg-slate-800/60 border border-slate-700 rounded-xl text-white font-black text-3xl cursor-default select-none">0</div>
+                                <input type="hidden" name="total_amount" id="total_amount" value="{{ old('total_amount', 0) }}">
                             </div>
-                            <p class="text-[10px] text-slate-500 font-medium">Sum of all line items must equal this total.</p>
-                        </div>
-
-                        <!-- Notes -->
-                        <div class="md:col-span-2 space-y-2">
-                            <label for="notes" class="text-xs font-black text-slate-500 uppercase tracking-widest">Overall Notes</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-start pt-3.5 pl-4 pointer-events-none text-slate-500">
-                                    <span class="material-symbols-outlined text-lg">notes</span>
-                                </span>
-                                <input type="text" name="notes" id="notes" value="{{ old('notes') }}"
-                                    class="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-white font-medium"
-                                    placeholder="Lunch at office, monthly subscription, etc.">
-                            </div>
+                            <p class="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">auto_fix_high</span>
+                                Auto-calculated from line items below.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -174,7 +174,7 @@
                                 <div class="space-y-1.5">
                                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Category</label>
                                     <select name="items[0][category_id]" onchange="updateSubcategories(this)" required
-                                        class="w-full px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none appearance-none transition-all text-white text-sm font-medium">
+                                        class="w-full px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none appearance-none transition-all text-white text-sm font-medium dark-select">
                                         <option value="">Select Category</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('items.0.category_id') == $category->id ? 'selected' : '' }}>
@@ -186,7 +186,7 @@
                                 <div class="space-y-1.5 subcategory-wrapper">
                                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subcategory (Optional)</label>
                                     <select name="items[0][subcategory_id]" disabled
-                                        class="w-full px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none appearance-none transition-all text-white text-sm font-medium disabled:opacity-30">
+                                        class="w-full px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none appearance-none transition-all text-white text-sm font-medium disabled:opacity-30 dark-select">
                                         <option value="">General</option>
                                     </select>
                                 </div>
@@ -309,20 +309,23 @@
         const typeInputs = document.querySelectorAll('input[name="type"]');
         const destWrapper = document.getElementById('destination_account_wrapper');
         const transferArrow = document.getElementById('transfer_arrow');
-        const toAccountSelect = document.getElementById('to_account_id');
+        const toAccountInput = document.getElementById('to_account_id');
 
         function toggleTransferUI(type) {
             if (type === 'transfer') {
                 destWrapper.classList.remove('hidden');
                 transferArrow.classList.remove('hidden');
                 transferArrow.classList.add('md:flex');
-                toAccountSelect.required = true;
             } else {
                 destWrapper.classList.add('hidden');
                 transferArrow.classList.add('hidden');
                 transferArrow.classList.remove('md:flex');
-                toAccountSelect.required = false;
-                toAccountSelect.value = '';
+                toAccountInput.value = '';
+                document.getElementById('to_account_label').textContent = 'Select Destination';
+                document.getElementById('to_account_label').classList.add('text-slate-400');
+                document.getElementById('to_account_label').classList.remove('text-white');
+                // Deselect all options visually
+                document.querySelectorAll('.to-account-option').forEach(btn => btn.classList.remove('bg-primary/20', 'text-white'));
             }
         }
 
@@ -335,21 +338,92 @@
                 toggleTransferUI(input.value);
             }
         });
+
+        // ── Custom To Account Dropdown Logic ──
+        const trigger  = document.getElementById('to_account_trigger');
+        const panel    = document.getElementById('to_account_panel');
+        const chevron  = document.getElementById('to_account_chevron');
+        const label    = document.getElementById('to_account_label');
+
+        trigger.addEventListener('click', function() {
+            const isOpen = !panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', isOpen);
+            chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+            trigger.classList.toggle('ring-2', !isOpen);
+            trigger.classList.toggle('ring-primary', !isOpen);
+            trigger.classList.toggle('border-primary', !isOpen);
+        });
+
+        document.querySelectorAll('.to-account-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const value = this.dataset.value;
+                const name  = this.dataset.label;
+
+                toAccountInput.value = value;
+                label.textContent = name;
+                label.classList.remove('text-slate-400');
+                label.classList.add('text-white');
+
+                // Highlight selected
+                document.querySelectorAll('.to-account-option').forEach(b => b.classList.remove('bg-primary/20', 'text-white', 'font-bold'));
+                this.classList.add('bg-primary/20', 'text-white', 'font-bold');
+
+                // Close panel
+                panel.classList.add('hidden');
+                chevron.style.transform = '';
+                trigger.classList.remove('ring-2', 'ring-primary', 'border-primary');
+            });
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('to_account_dropdown');
+            if (wrapper && !wrapper.contains(e.target)) {
+                panel.classList.add('hidden');
+                chevron.style.transform = '';
+                trigger.classList.remove('ring-2', 'ring-primary', 'border-primary');
+            }
+        });
     });
 
-    // Option: Helper to sync total amount sum
+    function recalcTotal() {
+        let sum = 0;
+        document.querySelectorAll('.item-amount').forEach(input => {
+            sum += parseFloat(input.value || 0);
+        });
+        document.getElementById('total_amount').value = sum.toFixed(2);
+        document.getElementById('total_display').textContent = new Intl.NumberFormat('id-ID').format(sum);
+    }
+
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('item-amount')) {
-            const totalDisplay = document.getElementById('total_amount');
-            if (totalDisplay && !totalDisplay.matches(':focus')) { // Only sync if user isn't typing in total amount manually
-                // Calculate current sum
-                let currentSum = 0;
-                document.querySelectorAll('.item-amount').forEach(input => {
-                    currentSum += parseFloat(input.value || 0);
-                });
-                totalDisplay.value = currentSum.toFixed(2);
-            }
+            recalcTotal();
+        }
+    });
+
+    // Also recalc after item is removed
+    document.getElementById('items-container').addEventListener('click', function(e) {
+        if (e.target.closest('.remove-item')) {
+            setTimeout(recalcTotal, 50);
         }
     });
 </script>
+<style>
+/* Custom scrollbar for dropdown */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* Force dark color-scheme on all native selects so browser renders options dark */
+select.dark-select, select.dark-select option {
+    color-scheme: dark;
+    background-color: #0f172a;
+    color: #f1f5f9;
+}
+select.dark-select option:hover,
+select.dark-select option:checked {
+    background-color: #1e3a5f;
+}
+</style>
 @endsection

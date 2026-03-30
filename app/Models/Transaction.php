@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Account;
 use App\Models\TransactionItem;
 
+use App\Traits\FilterByOwnedAccount;
+
 class Transaction extends Model
 {
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
-    use HasFactory;
+    use HasFactory, FilterByOwnedAccount;
 
     protected $fillable = ['account_id', 'to_account_id', 'type', 'transaction_date', 'total_amount', 'notes'];
 

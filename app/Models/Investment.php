@@ -6,12 +6,15 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasOwner;
+
 class Investment extends Model
 {
-    use HasFactory;
+    use HasFactory, HasOwner;
     
     protected $fillable = [
         'user_id',
+        'owner',
         'name',
         'ticker',
         'asset_class',
@@ -20,7 +23,8 @@ class Investment extends Model
         'price_unit',
         'quantity',
         'average_cost',
-        'current_price'
+        'current_price',
+        'goal_id',
     ];
 
     protected function casts(): array
@@ -35,6 +39,11 @@ class Investment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function goal()
+    {
+        return $this->belongsTo(Goal::class);
     }
 
     protected function marketValue(): Attribute

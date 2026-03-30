@@ -9,8 +9,7 @@ class AssetController extends Controller
 {
     public function index()
     {
-        $userId = auth()->id();
-        $assets = Asset::where('user_id', $userId)->get();
+        $assets = Asset::all();
 
         $totalAssetValue    = $assets->sum('current_value');
         $appreciatingAssets = collect();
@@ -49,6 +48,7 @@ class AssetController extends Controller
     {
         $validated = $request->validate([
             'name'           => 'required',
+            'owner'          => 'required|in:afin,pacar,business',
             'description'    => 'nullable',
             'type'           => 'required',
             'purchase_price' => 'required|numeric',
@@ -62,16 +62,15 @@ class AssetController extends Controller
 
     public function edit(Asset $asset)
     {
-        abort_if($asset->user_id !== auth()->id(), 403);
         return view('assets.edit', compact('asset'));
     }
 
     public function update(Request $request, Asset $asset)
     {
-        abort_if($asset->user_id !== auth()->id(), 403);
 
         $validated = $request->validate([
             'name'           => 'required',
+            'owner'          => 'required|in:afin,pacar,business',
             'description'    => 'nullable',
             'type'           => 'required',
             'purchase_price' => 'required|numeric',
@@ -84,7 +83,6 @@ class AssetController extends Controller
 
     public function destroy(Asset $asset)
     {
-        abort_if($asset->user_id !== auth()->id(), 403);
         $asset->delete();
         return redirect()->route('assets.index')->with('success', 'Asset deleted successfully.');
     }

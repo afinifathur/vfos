@@ -11,13 +11,14 @@ class AccountController extends Controller
 {
     public function index()
     {
-        $accounts = Account::where('user_id', auth()->id())->orderBy('name', 'asc')->get();
+        $accounts = Account::orderBy('name', 'asc')->get();
         return view('accounts.index', compact('accounts'));
     }
 
     public function create()
     {
-        return view('accounts.create');
+        $goals = \App\Models\Goal::all();
+        return view('accounts.create', compact('goals'));
     }
 
     public function store(Request $request)
@@ -25,10 +26,11 @@ class AccountController extends Controller
         $validated = $request->validate([
             'name'            => 'required',
             'type'            => 'required|in:bank,ewallet,cash,investment,other',
-            'owner'           => 'required|in:afin,pacar',
+            'owner'           => 'required|in:afin,pacar,business',
             'is_active'       => 'boolean',
             'initial_balance' => 'nullable|numeric|min:0',
             'icon'            => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,ico|max:1024',
+            'goal_id'         => 'nullable|exists:goals,id',
         ]);
 
         if ($request->hasFile('icon')) {
@@ -44,21 +46,21 @@ class AccountController extends Controller
 
     public function edit(Account $account)
     {
-        abort_if($account->user_id !== auth()->id(), 403);
-        return view('accounts.edit', compact('account'));
+        $goals = \App\Models\Goal::all();
+        return view('accounts.edit', compact('account', 'goals'));
     }
 
     public function update(Request $request, Account $account)
     {
-        abort_if($account->user_id !== auth()->id(), 403);
 
         $validated = $request->validate([
             'name'            => 'required',
             'type'            => 'required|in:bank,ewallet,cash,investment,other',
-            'owner'           => 'required|in:afin,pacar',
+            'owner'           => 'required|in:afin,pacar,business',
             'is_active'       => 'boolean',
             'initial_balance' => 'nullable|numeric|min:0',
             'icon'            => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,ico|max:1024',
+            'goal_id'         => 'nullable|exists:goals,id',
         ]);
 
         if ($request->hasFile('icon')) {
@@ -78,7 +80,6 @@ class AccountController extends Controller
 
     public function destroy(Account $account)
     {
-        abort_if($account->user_id !== auth()->id(), 403);
 
         \App\Models\Transaction::where('account_id', $account->id)->update(['account_id' => null]);
 
@@ -91,14 +92,12 @@ class AccountController extends Controller
 
     public function reconcile(Account $account)
     {
-        abort_if($account->user_id !== auth()->id(), 403);
-        $categories = \App\Models\Category::where('user_id', auth()->id())->where('is_active', true)->get();
+        $categories = \App\Models\Category::where('is_active', true)->get();
         return view('accounts.reconcile', compact('account', 'categories'));
     }
 
     public function processReconcile(Request $request, Account $account)
     {
-        abort_if($account->user_id !== auth()->id(), 403);
 
         $validated = $request->validate([
             'actual_balance' => 'required|numeric',

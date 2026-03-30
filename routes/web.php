@@ -12,7 +12,9 @@ use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\GoalController;
 use App\Http\Controllers\WealthStatementController;
+use App\Http\Controllers\ProfitLossController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth (Guest only) ────────────────────────────────────────────────────────
@@ -28,6 +30,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('wealth-statement', [WealthStatementController::class, 'index'])->name('wealth-statement');
     Route::get('wealth-statement/pdf', [WealthStatementController::class, 'pdf'])->name('wealth-statement.pdf');
+    
+    Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss');
+    Route::get('profit-loss/pdf', [ProfitLossController::class, 'pdf'])->name('profit-loss.pdf');
 
     Route::get('accounts/{account}/reconcile', [AccountController::class, 'reconcile'])->name('accounts.reconcile');
     Route::post('accounts/{account}/reconcile', [AccountController::class, 'processReconcile'])->name('accounts.processReconcile');
@@ -38,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('budgets', BudgetController::class);
     Route::resource('debts', DebtController::class);
     Route::resource('receivables', ReceivableController::class);
+    Route::resource('goals', GoalController::class);
     Route::resource('investments', InvestmentController::class);
     Route::resource('assets', AssetController::class);
 

@@ -13,8 +13,7 @@ class InvestmentController extends Controller
 {
     public function index()
     {
-        $userId      = auth()->id();
-        $investments = Investment::where('user_id', $userId)->get();
+        $investments = Investment::all();
 
         $totalPortfolioValue = $investments->sum('market_value');
         $totalInvested       = $investments->sum('total_cost');
@@ -30,7 +29,8 @@ class InvestmentController extends Controller
 
     public function create()
     {
-        return view('investments.create');
+        $goals = \App\Models\Goal::all();
+        return view('investments.create', compact('goals'));
     }
 
     public function store(Request $request)
@@ -39,12 +39,14 @@ class InvestmentController extends Controller
             'name'          => 'required|string|max:255',
             'ticker'        => 'nullable|string|max:50',
             'asset_class'   => 'required|string',
+            'owner'         => 'required|in:afin,pacar,business',
             'scraping_url'  => 'nullable|url|max:500',
             'currency'      => 'nullable|string|max:10',
             'price_unit'    => 'nullable|string|max:20',
             'quantity'      => 'required|numeric|min:0',
             'average_cost'  => 'required|numeric|min:0',
             'current_price' => 'nullable|numeric|min:0',
+            'goal_id'       => 'nullable|exists:goals,id',
         ]);
 
         $validated['currency']   = $validated['currency']   ?? 'IDR';
@@ -67,24 +69,25 @@ class InvestmentController extends Controller
 
     public function edit(Investment $investment)
     {
-        abort_if($investment->user_id !== auth()->id(), 403);
-        return view('investments.edit', compact('investment'));
+        $goals = \App\Models\Goal::all();
+        return view('investments.edit', compact('investment', 'goals'));
     }
 
     public function update(Request $request, Investment $investment)
     {
-        abort_if($investment->user_id !== auth()->id(), 403);
 
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
             'ticker'        => 'nullable|string|max:50',
             'asset_class'   => 'required|string',
+            'owner'         => 'required|in:afin,pacar,business',
             'scraping_url'  => 'nullable|url|max:500',
             'currency'      => 'nullable|string|max:10',
             'price_unit'    => 'nullable|string|max:20',
             'quantity'      => 'required|numeric|min:0',
             'average_cost'  => 'required|numeric|min:0',
             'current_price' => 'nullable|numeric|min:0',
+            'goal_id'       => 'nullable|exists:goals,id',
         ]);
 
         $validated['currency']   = $validated['currency']   ?? 'IDR';
@@ -112,11 +115,9 @@ class InvestmentController extends Controller
      */
     public function refresh(Request $request)
     {
-        $userId      = auth()->id();
-        $investments = Investment::where('user_id', $userId)
-            ->whereNotNull('ticker')
-            ->orWhere(function ($q) use ($userId) {
-                $q->where('user_id', $userId)->where('asset_class', 'Mutual Fund');
+        $investments = Investment::whereNotNull('ticker')
+            ->orWhere(function ($q) {
+                $q->where('asset_class', 'Mutual Fund');
             })
             ->get(['id', 'name', 'ticker', 'asset_class']);
 
@@ -137,7 +138,6 @@ class InvestmentController extends Controller
      */
     public function refreshItem(Investment $investment)
     {
-        abort_if($investment->user_id !== auth()->id(), 403);
 
         set_time_limit(30);
 
@@ -190,7 +190,6 @@ class InvestmentController extends Controller
 
     public function destroy(Investment $investment)
     {
-        abort_if($investment->user_id !== auth()->id(), 403);
         $investment->delete();
         return redirect()->route('investments.index')->with('success', 'Investment deleted successfully.');
     }
