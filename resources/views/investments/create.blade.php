@@ -9,6 +9,20 @@
         <p class="text-sm text-slate-500">Log a new holding into your portfolio.</p>
     </div>
 
+    @if($errors->any())
+        <div class="rounded-xl bg-rose-500/10 p-4 border border-rose-500/20 flex gap-3 items-start">
+            <span class="material-symbols-outlined text-rose-500 mt-0.5">error</span>
+            <div class="space-y-1">
+                <p class="text-sm font-bold text-rose-500">Validation Error</p>
+                <ul class="list-disc list-inside text-xs text-rose-400/80">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
     <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 p-6">
         <form action="{{ route('investments.store') }}" method="POST" class="space-y-6">
             @csrf
