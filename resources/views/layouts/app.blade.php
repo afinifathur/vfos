@@ -201,13 +201,11 @@
     </div>
 <script>
 // ── Global Thousand-Separator Formatter ───────────────────────────────────
-document.addEventListener('DOMContentLoaded', function () {
+window.initializeNumberFormatting = function (container = document) {
     function formatNum(raw) {
         if (raw === '' || raw === null || raw === undefined) return '';
         var str = String(raw).trim();
-        // Split on decimal point
         var parts = str.split('.');
-        // Add thousand separators to integer part
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         return parts.join('.');
     }
@@ -216,9 +214,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return val.replace(/,/g, '');
     }
 
-    // Target all number inputs
-    var numInputs = document.querySelectorAll('input[type="number"]');
+    var numInputs = container.querySelectorAll('input[inputmode="decimal"]');
+    // Also catch original type="number" if not yet processed
+    if (container === document) {
+        numInputs = Array.from(numInputs).concat(Array.from(container.querySelectorAll('input[type="number"]')));
+    } else {
+        // For cloned elements, they might already be inputmode="decimal" or still type="number"
+        var moreInputs = container.querySelectorAll('input[type="number"]');
+        numInputs = Array.from(numInputs).concat(Array.from(moreInputs));
+    }
+
     numInputs.forEach(function (input) {
+        if (input.dataset.numberFormatted) return;
+        input.dataset.numberFormatted = "true";
+
         // Switch to text so we can display commas
         input.setAttribute('type', 'text');
         input.setAttribute('inputmode', 'decimal');
@@ -249,12 +258,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    window.initializeNumberFormatting();
 
     // Before any form submits: strip commas so server gets plain numbers
     document.querySelectorAll('form').forEach(function (form) {
         form.addEventListener('submit', function () {
             form.querySelectorAll('input[inputmode="decimal"]').forEach(function (input) {
-                input.value = stripNum(input.value);
+                // We need to strip commas without the user seeing it if possible, 
+                // but since form is submitting, it usually doesn't matter.
+                input.value = input.value.replace(/,/g, '');
             });
         });
     });

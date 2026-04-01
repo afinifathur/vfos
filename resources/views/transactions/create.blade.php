@@ -270,8 +270,13 @@
                 if (name) {
                     el.setAttribute('name', name.replace(/\[\d+\]/, `[${itemCount}]`));
                 }
-                // Clear values and reset state
-                if (el.tagName === 'SELECT' && el.getAttribute('name').includes('subcategory_id')) {
+                
+                // Clear values and reset state for formatting
+                if (el.classList.contains('item-amount')) {
+                    el.value = '';
+                    el.removeAttribute('data-number-formatted');
+                    el.setAttribute('type', 'number'); // Reset type to allow re-initialization
+                } else if (el.tagName === 'SELECT' && el.getAttribute('name').includes('subcategory_id')) {
                     el.innerHTML = '<option value="">General</option>';
                     el.disabled = true;
                 } else {
@@ -281,6 +286,11 @@
             
             container.appendChild(template);
             itemCount++;
+            
+            // Re-initialize number formatting for the new inputs
+            if (window.initializeNumberFormatting) {
+                window.initializeNumberFormatting(template);
+            }
         });
 
         container.addEventListener('click', function(e) {
@@ -389,7 +399,9 @@
     function recalcTotal() {
         let sum = 0;
         document.querySelectorAll('.item-amount').forEach(input => {
-            sum += parseFloat(input.value || 0);
+            // Strip commas (thousand separators) before parsing
+            const val = (input.value || '0').replace(/,/g, '');
+            sum += parseFloat(val || 0);
         });
         document.getElementById('total_amount').value = sum.toFixed(2);
         document.getElementById('total_display').textContent = new Intl.NumberFormat('id-ID').format(sum);
