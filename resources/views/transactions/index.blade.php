@@ -114,9 +114,18 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2.5 py-1 text-[11px] font-medium bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 rounded-full">
-                                    {{ $transaction->transactionItems->first()?->category->name ?? 'Uncategorized' }}
-                                </span>
+                                <div class="flex flex-wrap gap-1">
+                                    @php
+                                        $uniqueCategories = $transaction->transactionItems
+                                            ->map(fn($item) => $item->category->name ?? 'Uncategorized')
+                                            ->unique();
+                                    @endphp
+                                    @foreach($uniqueCategories as $catName)
+                                        <span class="px-2.5 py-1 text-[10px] font-bold bg-primary/10 text-primary rounded-full uppercase tracking-tighter">
+                                            {{ $catName }}
+                                        </span>
+                                    @endforeach
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <p class="text-sm dark:text-slate-300">{{ $transaction->account?->name ?? '— (akun dihapus)' }}</p>
