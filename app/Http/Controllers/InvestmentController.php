@@ -8,6 +8,7 @@ use App\Services\KontanService;
 use App\Services\YahooFinanceService;
 use App\Services\PasardanaService;
 use App\Services\CurrencyService;
+use App\Services\BareksaService;
 
 class InvestmentController extends Controller
 {
@@ -53,9 +54,20 @@ class InvestmentController extends Controller
         $validated['price_unit'] = $validated['price_unit'] ?? 'unit';
 
         if ($validated['asset_class'] === 'Mutual Fund' && !empty($validated['scraping_url'])) {
-            $kontan = new KontanService();
-            $nav    = $kontan->getNavFromKontan($validated['scraping_url']);
+            $url = $validated['scraping_url'];
+            if (str_contains(strtolower($url), 'bareksa.com')) {
+                $bareksa = new BareksaService();
+                $nav = $bareksa->getNavFromBareksa($url);
+            } else {
+                $kontan = new KontanService();
+                $nav = $kontan->getNavFromKontan($url);
+            }
             if ($nav) { $validated['current_price'] = $nav; }
+        }
+
+        // Final safety: if it's mutual fund and we don't have a ticker, make it null
+        if ($validated['asset_class'] === 'Mutual Fund') {
+            $validated['ticker'] = null;
         }
 
         if (empty($validated['current_price'])) {
@@ -95,10 +107,20 @@ class InvestmentController extends Controller
 
         if ($validated['asset_class'] === 'Mutual Fund' && !empty($validated['scraping_url'])) {
             if ($validated['scraping_url'] !== $investment->scraping_url) {
-                $kontan = new KontanService();
-                $nav    = $kontan->getNavFromKontan($validated['scraping_url']);
+                $url = $validated['scraping_url'];
+                if (str_contains(strtolower($url), 'bareksa.com')) {
+                    $bareksa = new BareksaService();
+                    $nav = $bareksa->getNavFromBareksa($url);
+                } else {
+                    $kontan = new KontanService();
+                    $nav = $kontan->getNavFromKontan($url);
+                }
                 if ($nav) { $validated['current_price'] = $nav; }
             }
+        }
+
+        if ($validated['asset_class'] === 'Mutual Fund') {
+            $validated['ticker'] = null;
         }
 
         if (empty($validated['current_price'])) {
@@ -150,7 +172,13 @@ class InvestmentController extends Controller
 
             if ($investment->asset_class === 'Mutual Fund') {
                 if ($investment->scraping_url) {
-                    $price = $kontan->getNavFromKontan($investment->scraping_url);
+                    $url = $investment->scraping_url;
+                    if (str_contains(strtolower($url), 'bareksa.com')) {
+                        $bareksa = new BareksaService();
+                        $price = $bareksa->getNavFromBareksa($url);
+                    } else {
+                        $price = $kontan->getNavFromKontan($url);
+                    }
                 } else {
                     $result = $pasardana->getNavReksaDana($investment->name);
                     $price  = $result['nav'] ?? null;

@@ -17,10 +17,21 @@ class BareksaService
     {
         try {
             $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                 'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            ])->timeout(10)->get($url);
+                'Accept-Encoding' => 'gzip, deflate, br',
+                'Cache-Control' => 'no-cache',
+                'Pragma' => 'no-cache',
+                'Sec-Ch-Ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                'Sec-Ch-Ua-Mobile' => '?0',
+                'Sec-Ch-Ua-Platform' => '"Windows"',
+                'Sec-Fetch-Dest' => 'document',
+                'Sec-Fetch-Mode' => 'navigate',
+                'Sec-Fetch-Site' => 'none',
+                'Sec-Fetch-User' => '?1',
+                'Upgrade-Insecure-Requests' => '1',
+            ])->timeout(15)->get($url);
 
             if ($response->successful()) {
                 $html = $response->body();
@@ -38,9 +49,11 @@ class BareksaService
                     
                     $nav = (float) $navStr;
                     return $nav > 0 ? $nav : null;
+                } else {
+                    Log::warning("Bareksa Scraper: Pattern not found in HTML for {$url}");
                 }
             } else {
-                Log::error("Bareksa Scraper error for {$url}: HTTP " . $response->status());
+                Log::error("Bareksa Scraper error for {$url}: HTTP " . $response->status() . " Body: " . substr($response->body(), 0, 200));
             }
         } catch (\Exception $e) {
             Log::error("Bareksa Scraper failed for {$url}: " . $e->getMessage());
