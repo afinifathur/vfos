@@ -40,9 +40,9 @@
 
                 <!-- Kontan URL (shown only for Mutual Fund) -->
                 <div id="scraping-url-field" style="display:none">
-                    <label for="scraping_url" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Kontan URL</label>
-                    <input type="url" name="scraping_url" id="scraping_url" value="{{ $investment->scraping_url }}" class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" placeholder="https://pusatdata.kontan.co.id/reksadana/produk/...">
-                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Salin URL produk reksadana dari pusatdata.kontan.co.id. NAB akan diperbarui otomatis oleh scheduler.</p>
+                    <label for="scraping_url" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Scraping URL (Kontan / Bareksa)</label>
+                    <input type="url" name="scraping_url" id="scraping_url" value="{{ $investment->scraping_url }}" class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" placeholder="https://pusatdata.kontan.co.id/... atau https://www.bareksa.com/...">
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Salin URL produk reksadana dari Kontan atau Bareksa. NAB akan diperbarui otomatis oleh scheduler.</p>
                 </div>
             </div>
 
@@ -123,7 +123,7 @@
                 <div>
                     <label for="current_price" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Current Market Price (Rp)</label>
                     <input type="number" step="0.000001" name="current_price" id="current_price" value="{{ rtrim(rtrim(number_format($investment->current_price, 6, '.', ''), '0'), '.') }}" class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-900 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
-                    <p id="current-price-hint" class="mt-1 text-xs text-slate-500 dark:text-slate-400" style="display:none">Diperbarui otomatis oleh scheduler dari Kontan.</p>
+                    <p id="current-price-hint" class="mt-1 text-xs text-slate-500 dark:text-slate-400" style="display:none">Diperbarui otomatis oleh scheduler dari scraping URL.</p>
                 </div>
             </div>
 

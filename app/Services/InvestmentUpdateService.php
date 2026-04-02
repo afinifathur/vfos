@@ -10,6 +10,7 @@ class InvestmentUpdateService
     protected YahooFinanceService $yahoo;
     protected PasardanaService $pasardana;
     protected KontanService $kontan;
+    protected BareksaService $bareksa;
     protected CurrencyService $currency;
 
     public function __construct()
@@ -17,6 +18,7 @@ class InvestmentUpdateService
         $this->yahoo     = new YahooFinanceService();
         $this->pasardana = new PasardanaService();
         $this->kontan    = new KontanService();
+        $this->bareksa   = new BareksaService();
         $this->currency  = new CurrencyService();
     }
 
@@ -45,9 +47,13 @@ class InvestmentUpdateService
                 $price = null;
 
                 if ($investment->asset_class === 'Mutual Fund') {
-                    // Reksa dana: use Kontan scraper or Pasardana
+                    // Reksa dana: use Kontan or Bareksa scraper, or fallback to Pasardana API
                     if ($investment->scraping_url) {
-                        $price = $this->kontan->getNavFromKontan($investment->scraping_url);
+                        if (str_contains(strtolower($investment->scraping_url), 'bareksa.com')) {
+                            $price = $this->bareksa->getNavFromBareksa($investment->scraping_url);
+                        } else {
+                            $price = $this->kontan->getNavFromKontan($investment->scraping_url);
+                        }
                     } else {
                         $result = $this->pasardana->getNavReksaDana($investment->name);
                         $price  = $result['nav'] ?? null;
