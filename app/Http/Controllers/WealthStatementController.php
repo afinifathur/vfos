@@ -41,7 +41,7 @@ class WealthStatementController extends Controller
         $totalDebts = $debts->sum('remaining_amount');
 
         // ── Totals ───────────────────────────────────────────────────────────
-        $totalAssets      = $totalCash + $totalInvestments + $totalReceivables + $totalFixedAssets;
+        $totalAssets      = $totalCash + $totalInvestments + $totalReceivables + $totalFixedAssets + $totalDepreciating;
         $totalLiabilities = $totalDebts;
         $netWorth         = $totalAssets - $totalLiabilities;
 
@@ -108,6 +108,20 @@ class WealthStatementController extends Controller
             ];
         }
 
+        // Depreciating Assets
+        foreach ($depreciatingAssets as $asset) {
+            $breakdownRows[] = [
+                'label'       => $asset->name,
+                'group'       => 'Depreciating Asset',
+                'amount'      => $asset->current_value,
+                'composition' => $totalAssets > 0 ? ($asset->current_value / $totalAssets) * 100 : 0,
+                'status'      => 'Depreciating',
+                'status_class'=> 'text-slate-400 bg-slate-400/10',
+                'dot'         => 'bg-slate-400',
+                'is_liability'=> false,
+            ];
+        }
+
         // Debts (liabilities)
         foreach ($debts as $debt) {
             if ($debt->remaining_amount == 0) continue;
@@ -160,7 +174,7 @@ class WealthStatementController extends Controller
         $debts      = Debt::where('user_id', $userId)->where('status', 'active')->get();
         $totalDebts = $debts->sum('remaining_amount');
 
-        $totalAssets      = $totalCash + $totalInvestments + $totalReceivables + $totalFixedAssets;
+        $totalAssets      = $totalCash + $totalInvestments + $totalReceivables + $totalFixedAssets + $totalDepreciating;
         $totalLiabilities = $totalDebts;
         $netWorth         = $totalAssets - $totalLiabilities;
 
