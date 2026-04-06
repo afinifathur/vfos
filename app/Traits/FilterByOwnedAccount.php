@@ -22,6 +22,10 @@ trait FilterByOwnedAccount
                     $builder->whereHas('account', function($q) {
                         $q->where('owner', 'business');
                     });
+                } else {
+                    $builder->whereHas('account', function($q) {
+                        $q->where('owner', 'afin');
+                    });
                 }
             }
         });

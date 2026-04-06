@@ -18,6 +18,9 @@ class DashboardController extends Controller
         $currentMonth = now()->month;
         $currentYear  = now()->year;
 
+        $role = auth()->user()->role;
+        $currentSpace = ($role === 'partner') ? 'pacar' : (($role === 'business') ? 'business' : 'afin');
+
         // ── Net Worth ──────────────────────────────────────────────────────────
         $accounts = Account::all();
         $netWorth = $accounts->sum(fn($a) => $a->calculateBalance());
@@ -111,6 +114,7 @@ class DashboardController extends Controller
             ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
             ->where('transactions.type', 'expense')
             ->where('categories.is_ignored', false)
+            ->where('accounts.owner', $currentSpace)
             ->whereMonth('transactions.transaction_date', $currentMonth)
             ->whereYear('transactions.transaction_date', $currentYear)
             ->groupBy('categories.name')
@@ -125,8 +129,10 @@ class DashboardController extends Controller
             ->join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
             ->leftJoin('subcategories', 'subcategories.id', '=', 'transaction_items.subcategory_id')
             ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
+            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
             ->where('transactions.type', 'expense')
             ->where('categories.is_ignored', false)
+            ->where('accounts.owner', $currentSpace)
             ->whereMonth('transactions.transaction_date', $currentMonth)
             ->whereYear('transactions.transaction_date', $currentYear)
             ->groupBy('label')

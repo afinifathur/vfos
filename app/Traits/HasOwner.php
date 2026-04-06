@@ -18,8 +18,10 @@ trait HasOwner
                     $builder->where($builder->getQuery()->from . '.owner', 'pacar');
                 } elseif ($role === 'business') {
                     $builder->where($builder->getQuery()->from . '.owner', 'business');
+                } else {
+                    $builder->where($builder->getQuery()->from . '.owner', 'afin');
                 }
-                // Admin (afin) can see all owners
+                // Admin (afin) can see all owners if they had a super role, but to stop mixing, we default to afin
             }
         });
 
