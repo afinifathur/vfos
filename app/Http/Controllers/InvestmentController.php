@@ -9,16 +9,63 @@ use App\Services\YahooFinanceService;
 use App\Services\PasardanaService;
 use App\Services\CurrencyService;
 use App\Services\BareksaService;
+use Illuminate\Support\Facades\DB;
 
 class InvestmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $investments = Investment::all();
+        $query = Investment::query();
 
-        $totalPortfolioValue = $investments->sum('market_value');
-        $totalInvested       = $investments->sum('total_cost');
+        // ── Filter by Type ────────────────────────────────────────────────────
+        if ($request->filled('type')) {
+            $type = $request->query('type');
+            if ($type === 'Mutual Fund') {
+                $query->where('asset_class', 'Mutual Fund');
+            } else {
+                $query->where('asset_class', 'like', '%' . $type . '%');
+            }
+        }
+
+        // ── Search by Ticker/Name ─────────────────────────────────────────────
+        if ($request->filled('search')) {
+            $search = '%' . $request->search . '%';
+            $query->where(function($q) use ($search) {
+                $q->where('ticker', 'like', $search)
+                  ->orWhere('name', 'like', $search);
+            });
+        }
+
+        // ── Initial Fetch for Summary ─────────────────────────────────────────
+        $allInvestments = (clone $query)->get();
+        $totalPortfolioValue = $allInvestments->sum('market_value');
+        $totalInvested       = $allInvestments->sum('total_cost');
         $totalProfitLoss     = $totalPortfolioValue - $totalInvested;
+
+        // ── Sorting ───────────────────────────────────────────────────────────
+        $sort = $request->query('sort', 'performance_desc');
+        switch ($sort) {
+            case 'performance_desc':
+                // Note: gain_loss_percentage is an attribute, but we can't sort by it in SQL easily.
+                // For small datasets, we'll sort after fetching. For large, ideally we'd use a raw SQL expression.
+                // Let's use a simpler sort for now: Market Value.
+                $query->orderByDesc(DB::raw('quantity * current_price'));
+                break;
+            case 'performance_asc':
+                $query->orderBy(DB::raw('quantity * current_price'));
+                break;
+            case 'market_value':
+                $query->orderByDesc(DB::raw('quantity * current_price'));
+                break;
+            case 'ticker_az':
+                $query->orderBy('ticker', 'asc');
+                break;
+            default:
+                $query->latest();
+                break;
+        }
+
+        $investments = $query->paginate(50)->appends($request->all());
 
         return view('investments.index', compact(
             'investments',
