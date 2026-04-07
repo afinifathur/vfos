@@ -48,70 +48,78 @@
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-64 flex-shrink-0 bg-background-light dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 flex flex-col">
-            <div class="p-6 flex items-center gap-3">
-                <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
+        <aside id="sidebar" class="w-64 flex-shrink-0 bg-background-light dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 relative">
+            <div class="p-6 flex items-center gap-3 overflow-hidden">
+                <div class="flex-shrink-0 size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
                     <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
                 </div>
-                <div>
+                <div class="sidebar-text opacity-100 transition-opacity duration-300">
                     <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">vFOS</h1>
                     <p class="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-semibold">Financial OS</p>
                 </div>
             </div>
+            
+            <!-- Toggle Button -->
+            <div class="px-4 mb-2">
+                <button id="sidebarToggle" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-card-dark transition-all group overflow-hidden">
+                    <span class="material-symbols-outlined transition-transform duration-300" id="sidebarToggleIcon">menu_open</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider sidebar-text opacity-100 transition-opacity duration-300">Minimize</span>
+                </button>
+            </div>
             <nav class="flex-1 px-4 space-y-1 mt-4 overflow-y-auto">
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('/') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/">
                     <span class="material-symbols-outlined {{ request()->is('/') ? '' : 'group-hover:text-primary' }}">dashboard</span>
-                    <span class="text-sm">Dashboard</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Dashboard</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('wealth-statement*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('wealth-statement') }}">
                     <span class="material-symbols-outlined {{ request()->is('wealth-statement') ? '' : 'group-hover:text-primary' }}">description</span>
-                    <span class="text-sm">Wealth Statement</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Wealth Statement</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('profit-loss*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('profit-loss') }}">
                     <span class="material-symbols-outlined {{ request()->is('profit-loss') ? '' : 'group-hover:text-primary' }}">receipt_long</span>
-                    <span class="text-sm">Profit & Loss</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Profit & Loss</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('transactions*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/transactions">
                     <span class="material-symbols-outlined {{ request()->is('transactions*') ? '' : 'group-hover:text-primary' }}">swap_horiz</span>
-                    <span class="text-sm">Transactions</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Transactions</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('categories*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/categories">
                     <span class="material-symbols-outlined {{ request()->is('categories*') ? '' : 'group-hover:text-primary' }}">category</span>
-                    <span class="text-sm">Categories</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Categories</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('accounts*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/accounts">
                     <span class="material-symbols-outlined {{ request()->is('accounts*') ? '' : 'group-hover:text-primary' }}">account_balance</span>
-                    <span class="text-sm">Accounts</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Accounts</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('goals*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/goals">
                     <span class="material-symbols-outlined {{ request()->is('goals*') ? '' : 'group-hover:text-primary' }}">flag</span>
-                    <span class="text-sm">Goals</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Goals</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('budgets*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/budgets">
                     <span class="material-symbols-outlined {{ request()->is('budgets*') ? '' : 'group-hover:text-primary' }}">pie_chart</span>
-                    <span class="text-sm">Budgets</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Budgets</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('debts*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/debts">
                     <span class="material-symbols-outlined {{ request()->is('debts*') ? '' : 'group-hover:text-primary' }}">credit_card</span>
-                    <span class="text-sm">Debts</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Debts</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('receivables*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/receivables">
                     <span class="material-symbols-outlined {{ request()->is('receivables*') ? '' : 'group-hover:text-primary' }}">trending_up</span>
-                    <span class="text-sm">Receivables</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Receivables</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('investments*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/investments">
                     <span class="material-symbols-outlined {{ request()->is('investments*') ? '' : 'group-hover:text-primary' }}">show_chart</span>
-                    <span class="text-sm">Investments</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Investments</span>
                 </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('assets*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/assets">
                     <span class="material-symbols-outlined {{ request()->is('assets*') ? '' : 'group-hover:text-primary' }}">diamond</span>
-                    <span class="text-sm">Assets</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Assets</span>
                 </a>
                 <div class="pt-8 pb-4">
-                    <p class="px-3 text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2">User</p>
+                    <p class="px-3 text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2 sidebar-text opacity-100 transition-opacity duration-300">User</p>
                     <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('settings*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('settings.index') }}">
                         <span class="material-symbols-outlined {{ request()->is('settings*') ? '' : 'group-hover:text-primary' }}">settings</span>
-                        <span class="text-sm">Settings</span>
+                        <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Settings</span>
                     </a>
                 </div>
             </nav>
@@ -259,7 +267,6 @@ window.initializeNumberFormatting = function (container = document) {
         });
     });
 };
-
 document.addEventListener('DOMContentLoaded', function () {
     window.initializeNumberFormatting();
 
@@ -267,11 +274,47 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('form').forEach(function (form) {
         form.addEventListener('submit', function () {
             form.querySelectorAll('input[inputmode="decimal"]').forEach(function (input) {
-                // We need to strip commas without the user seeing it if possible, 
-                // but since form is submitting, it usually doesn't matter.
                 input.value = input.value.replace(/,/g, '');
             });
         });
+    });
+
+    // ── Sidebar Toggle Logic ────────────────────────────────────────────────
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarToggleIcon = document.getElementById('sidebarToggleIcon');
+    const sidebarTexts = document.querySelectorAll('.sidebar-text');
+
+    function updateSidebar(isMinimized) {
+        if (isMinimized) {
+            sidebar.classList.remove('w-64');
+            sidebar.classList.add('w-20');
+            sidebarToggleIcon.style.transform = 'rotate(180deg)';
+            sidebarToggleIcon.innerText = 'menu';
+            sidebarTexts.forEach(el => {
+                el.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => el.classList.add('hidden'), 300);
+            });
+        } else {
+            sidebar.classList.remove('w-20');
+            sidebar.classList.add('w-64');
+            sidebarToggleIcon.style.transform = 'rotate(0deg)';
+            sidebarToggleIcon.innerText = 'menu_open';
+            sidebarTexts.forEach(el => {
+                el.classList.remove('hidden');
+                setTimeout(() => el.classList.replace('opacity-0', 'opacity-100'), 10);
+            });
+        }
+    }
+
+    // Initial state
+    let isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+    if (isMinimized) updateSidebar(true);
+
+    sidebarToggle.addEventListener('click', () => {
+        isMinimized = !isMinimized;
+        localStorage.setItem('sidebarMinimized', isMinimized);
+        updateSidebar(isMinimized);
     });
 });
 </script>
