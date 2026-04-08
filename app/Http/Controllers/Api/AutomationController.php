@@ -21,8 +21,14 @@ class AutomationController extends Controller
             return response()->json(['message' => 'Skipping failed transaction'], 200);
         }
 
-        $account = Account::where('account_number', '0244247535')->first();
+        $sourceAccount = $request->source_account ?? '0244247535';
+        $account = Account::where('account_number', $sourceAccount)->first();
         
+        // Fallback to searching by name if account_number is not set in the database
+        if (!$account) {
+            $account = Account::where('name', 'BCA DEBIT')->first();
+        }
+
         if (!$account) {
             return response()->json(['message' => 'Account not found'], 404);
         }
@@ -36,7 +42,8 @@ class AutomationController extends Controller
 
         // Guess type
         $type = 'expense';
-        if (str_contains(strtolower($request->type), 'transfer') && str_contains(strtolower($request->type), 'credit')) {
+        $requestType = $request->type ?? '';
+        if (str_contains(strtolower($requestType), 'transfer') && str_contains(strtolower($requestType), 'credit')) {
             $type = 'income';
         }
         
