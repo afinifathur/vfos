@@ -12,5 +12,5 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/transactions', [TransactionController::class, 'store']);
 
-// BCA Automation via n8n
-Route::post('/automation/bca', [AutomationController::class, 'handleBca']);
+// Generic Automation Webhook via n8n
+Route::post('/automation/webhook', [AutomationController::class, 'handleWebhook']);

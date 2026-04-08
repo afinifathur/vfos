@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class AutomationController extends Controller
 {
-    public function handleBca(Request $request)
+    public function handleWebhook(Request $request)
     {
         Log::info('BCA Automation Request:', $request->all());
 
@@ -21,16 +21,22 @@ class AutomationController extends Controller
             return response()->json(['message' => 'Skipping failed transaction'], 200);
         }
 
-        $sourceAccount = $request->source_account ?? '0244247535';
-        $account = Account::where('account_number', $sourceAccount)->first();
+        // Assume source_account is provided. If not, use a fallback but this should be supplied by n8n.
+        $sourceAccount = $request->source_account;
         
-        // Fallback to searching by name if account_number is not set in the database
-        if (!$account) {
-            $account = Account::where('name', 'BCA DEBIT')->first();
+        $account = null;
+        if ($sourceAccount) {
+            // First try matching exactly by account_number
+            $account = Account::where('account_number', $sourceAccount)->first();
+            
+            // If not found, try matching by account name (e.g., if source_account sent from n8n is 'Gopay')
+            if (!$account) {
+                 $account = Account::where('name', 'like', "%{$sourceAccount}%")->first();
+            }
         }
 
         if (!$account) {
-            return response()->json(['message' => 'Account not found'], 404);
+            return response()->json(['message' => "Account not found for identifier: {$sourceAccount}"], 404);
         }
 
         // Parse date "15 Mar 2026 16:03:48"
