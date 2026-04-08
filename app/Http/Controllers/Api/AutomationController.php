@@ -47,8 +47,11 @@ class AutomationController extends Controller
             $type = 'income';
         }
         
-        // Default category
-        $category = Category::where('name', 'Uncategorized')->first() ?? Category::first();
+        // Default category (create if it doesn't exist)
+        $category = Category::firstOrCreate(
+            ['name' => 'Uncategorized'],
+            ['type' => $type]
+        );
 
         return DB::transaction(function () use ($request, $account, $transactionDate, $type, $category) {
             $transaction = Transaction::create([
