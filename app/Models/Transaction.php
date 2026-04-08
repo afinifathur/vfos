@@ -14,7 +14,7 @@ class Transaction extends Model
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
     use HasFactory, FilterByOwnedAccount;
 
-    protected $fillable = ['account_id', 'to_account_id', 'type', 'transaction_date', 'total_amount', 'notes'];
+    protected $fillable = ['external_id', 'account_id', 'to_account_id', 'type', 'transaction_date', 'total_amount', 'notes'];
 
     protected static function booted()
     {

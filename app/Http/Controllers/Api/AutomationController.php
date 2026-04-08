@@ -59,14 +59,34 @@ class AutomationController extends Controller
             ['type' => $type]
         );
 
-        return DB::transaction(function () use ($request, $account, $transactionDate, $type, $category) {
-            $transaction = Transaction::create([
+        $externalId = $request->external_id;
+
+        return DB::transaction(function () use ($request, $account, $transactionDate, $type, $category, $externalId) {
+            $transactionData = [
                 'account_id' => $account->id,
                 'type' => $type,
                 'transaction_date' => $transactionDate->toDateString(),
                 'total_amount' => $request->amount,
                 'notes' => "Automated: {$request->merchant} ({$request->type}) - {$request->raw_amount}",
-            ]);
+            ];
+
+            $transaction = null;
+
+            if ($externalId) {
+                $transaction = Transaction::firstOrCreate(
+                    ['external_id' => $externalId],
+                    $transactionData
+                );
+
+                if (!$transaction->wasRecentlyCreated) {
+                    return response()->json([
+                        'message' => 'Duplicate ignored',
+                        'id' => $transaction->id
+                    ], 200);
+                }
+            } else {
+                $transaction = Transaction::create($transactionData);
+            }
 
             $transaction->transactionItems()->create([
                 'category_id' => $category->id,
