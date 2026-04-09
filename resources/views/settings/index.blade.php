@@ -220,6 +220,38 @@
                             </div>
                             <span class="px-3 py-1 text-xs font-bold bg-green-500/10 text-green-500 rounded-lg">Aktif</span>
                         </div>
+                        {{-- Bareksa --}}
+                        <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-slate-700 rounded-xl">
+                            <div class="flex items-center gap-4">
+                                <div class="size-10 bg-lime-500/10 text-lime-600 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-outlined">analytics</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Bareksa.com</p>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="size-1.5 rounded-full bg-green-500"></span>
+                                        <p class="text-xs text-slate-500">Connected · Scraper NAB Reksa Dana</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-bold bg-green-500/10 text-green-500 rounded-lg">Aktif</span>
+                        </div>
+                        {{-- Kemenangan Signature --}}
+                        <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-slate-700 rounded-xl">
+                            <div class="flex items-center gap-4">
+                                <div class="size-10 bg-amber-500/10 text-amber-500 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-outlined">payments</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Kemenangan Signature</p>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="size-1.5 rounded-full bg-green-500"></span>
+                                        <p class="text-xs text-slate-500">Connected · Harga Buyback Emas (6K - 24K)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-bold bg-green-500/10 text-green-500 rounded-lg">Aktif</span>
+                        </div>
                         {{-- Currency --}}
                         <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-slate-700 rounded-xl">
                             <div class="flex items-center gap-4">
@@ -231,6 +263,22 @@
                                     <div class="flex items-center gap-1.5">
                                         <span class="size-1.5 rounded-full bg-green-500"></span>
                                         <p class="text-xs text-slate-500">Connected · Kurs USD/IDR real-time (open.er-api.com)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-bold bg-green-500/10 text-green-500 rounded-lg">Aktif</span>
+                        </div>
+                        {{-- n8n Automation --}}
+                        <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-slate-700 rounded-xl">
+                            <div class="flex items-center gap-4">
+                                <div class="size-10 bg-orange-500/10 text-orange-500 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-outlined">hub</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">n8n Automation</p>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="size-1.5 rounded-full bg-green-500"></span>
+                                        <p class="text-xs text-slate-500">Connected · Inbound Transaction Webhook</p>
                                     </div>
                                 </div>
                             </div>

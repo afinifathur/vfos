@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Investment;
 use App\Services\KontanService;
 use App\Services\YahooFinanceService;
-use App\Services\PasardanaService;
 use App\Services\CurrencyService;
 use App\Services\BareksaService;
+use App\Services\KemenanganSignatureService;
 use Illuminate\Support\Facades\DB;
 
 class InvestmentController extends Controller
@@ -214,8 +214,8 @@ class InvestmentController extends Controller
             $price    = null;
             $yahoo    = new YahooFinanceService();
             $kontan   = new KontanService();
-            $pasardana = new PasardanaService();
             $currency  = new CurrencyService();
+            $gold      = new KemenanganSignatureService();
 
             if ($investment->asset_class === 'Mutual Fund') {
                 if ($investment->scraping_url) {
@@ -226,21 +226,23 @@ class InvestmentController extends Controller
                     } else {
                         $price = $kontan->getNavFromKontan($url);
                     }
-                } else {
-                    $result = $pasardana->getNavReksaDana($investment->name);
-                    $price  = $result['nav'] ?? null;
                 }
             } elseif ($investment->ticker) {
-                $rawPrice = $yahoo->getStockPrice($investment->ticker);
+                // Check if ticker is a K-Gold ticker (e.g. 17K, 24K)
+                if (preg_match('/^\d+K\+?$/i', $investment->ticker)) {
+                    $price = $gold->getPrice($investment->ticker);
+                } else {
+                    $rawPrice = $yahoo->getStockPrice($investment->ticker);
 
-                if ($rawPrice !== null) {
-                    if ($investment->currency === 'USD') {
-                        $usdToIdr = $currency->getUsdToIdr();
-                        $price = $investment->price_unit === 'gram'
-                            ? ($rawPrice / 31.1035) * $usdToIdr
-                            : $rawPrice * $usdToIdr;
-                    } else {
-                        $price = $rawPrice;
+                    if ($rawPrice !== null) {
+                        if ($investment->currency === 'USD') {
+                            $usdToIdr = $currency->getUsdToIdr();
+                            $price = $investment->price_unit === 'gram'
+                                ? ($rawPrice / 31.1035) * $usdToIdr
+                                : $rawPrice * $usdToIdr;
+                        } else {
+                            $price = $rawPrice;
+                        }
                     }
                 }
             } else {
