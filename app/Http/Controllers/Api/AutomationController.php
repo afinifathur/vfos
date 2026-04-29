@@ -25,41 +25,20 @@ class AutomationController extends Controller
         }
 
         // =======================
-        // ACCOUNT MATCHING
+        // ACCOUNT MATCHING (BY BANK)
         // =======================
-        $sourceAccount = $request->source_account;
         $account = null;
+        $bank = strtoupper($request->bank ?? '');
 
-        if ($sourceAccount) {
-            // Exact match (full account number)
-            $account = Account::where('account_number', $sourceAccount)->first();
-
-            // If masked account (example: ****5882), match by last digits
-            if (!$account) {
-                $cleanSourceAccount = preg_replace('/\*/', '', $sourceAccount);
-
-                if ($cleanSourceAccount) {
-                    $account = Account::where(
-                        'account_number',
-                        'like',
-                        "%{$cleanSourceAccount}"
-                    )->first();
-                }
-            }
-
-            // Fallback: match by account name
-            if (!$account) {
-                $account = Account::where(
-                    'name',
-                    'like',
-                    "%{$sourceAccount}%"
-                )->first();
-            }
+        if ($bank === 'MANDIRI') {
+            $account = Account::where('name', 'like', '%MANDIRI%')->first();
+        } elseif ($bank === 'BCA') {
+            $account = Account::where('name', 'like', '%BCA%')->first();
         }
 
         if (!$account) {
             return response()->json([
-                'message' => "Account not found for identifier: {$sourceAccount}"
+                'message' => "Account not found for bank: {$bank}"
             ], 404);
         }
 
