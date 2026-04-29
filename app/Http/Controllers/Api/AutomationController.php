@@ -15,45 +15,80 @@ class AutomationController extends Controller
 {
     public function handleWebhook(Request $request)
     {
-        Log::info('BCA Automation Request:', $request->all());
+        Log::info('Automation Request:', $request->all());
 
+        // Skip failed transaction
         if ($request->status === 'Failed') {
-            return response()->json(['message' => 'Skipping failed transaction'], 200);
+            return response()->json([
+                'message' => 'Skipping failed transaction'
+            ], 200);
         }
 
-        // Assume source_account is provided. If not, use a fallback but this should be supplied by n8n.
+        // =======================
+        // ACCOUNT MATCHING
+        // =======================
         $sourceAccount = $request->source_account;
-        
         $account = null;
+
         if ($sourceAccount) {
-            // First try matching exactly by account_number
+            // Exact match (full account number)
             $account = Account::where('account_number', $sourceAccount)->first();
-            
-            // If not found, try matching by account name (e.g., if source_account sent from n8n is 'Gopay')
+
+            // If masked account (example: ****5882), match by last digits
             if (!$account) {
-                 $account = Account::where('name', 'like', "%{$sourceAccount}%")->first();
+                $cleanSourceAccount = preg_replace('/\*/', '', $sourceAccount);
+
+                if ($cleanSourceAccount) {
+                    $account = Account::where(
+                        'account_number',
+                        'like',
+                        "%{$cleanSourceAccount}"
+                    )->first();
+                }
+            }
+
+            // Fallback: match by account name
+            if (!$account) {
+                $account = Account::where(
+                    'name',
+                    'like',
+                    "%{$sourceAccount}%"
+                )->first();
             }
         }
 
         if (!$account) {
-            return response()->json(['message' => "Account not found for identifier: {$sourceAccount}"], 404);
+            return response()->json([
+                'message' => "Account not found for identifier: {$sourceAccount}"
+            ], 404);
         }
 
-        // Parse date "15 Mar 2026 16:03:48"
+        // =======================
+        // DATE PARSING
+        // =======================
         try {
             $transactionDate = Carbon::parse($request->date);
         } catch (\Exception $e) {
             $transactionDate = now();
         }
 
-        // Guess type
+        // =======================
+        // DETECT TYPE
+        // =======================
         $type = 'expense';
-        $requestType = $request->type ?? '';
-        if (str_contains(strtolower($requestType), 'transfer') && str_contains(strtolower($requestType), 'credit')) {
+
+        $requestType = strtolower($request->type ?? '');
+
+        if (
+            str_contains($requestType, 'transfer') &&
+            str_contains($requestType, 'credit')
+        ) {
             $type = 'income';
         }
-        
-        // Default category (create if it doesn't exist)
+
+        // =======================
+        // CATEGORY
+        // =======================
         $category = Category::firstOrCreate(
             ['name' => 'Uncategorized'],
             ['type' => $type]
@@ -61,17 +96,28 @@ class AutomationController extends Controller
 
         $externalId = $request->external_id;
 
-        return DB::transaction(function () use ($request, $account, $transactionDate, $type, $category, $externalId) {
+        // =======================
+        // DATABASE TRANSACTION
+        // =======================
+        return DB::transaction(function () use (
+            $request,
+            $account,
+            $transactionDate,
+            $type,
+            $category,
+            $externalId
+        ) {
             $transactionData = [
-                'account_id' => $account->id,
-                'type' => $type,
+                'account_id'       => $account->id,
+                'type'             => $type,
                 'transaction_date' => $transactionDate->toDateString(),
-                'total_amount' => $request->amount,
-                'notes' => "Automated: {$request->merchant} ({$request->type}) - {$request->raw_amount}",
+                'total_amount'     => $request->amount,
+                'notes'            => "Automated: {$request->merchant} ({$request->type}) - {$request->raw_amount}",
             ];
 
             $transaction = null;
 
+            // Prevent duplicate if external_id exists
             if ($externalId) {
                 $transaction = Transaction::firstOrCreate(
                     ['external_id' => $externalId],
@@ -81,22 +127,23 @@ class AutomationController extends Controller
                 if (!$transaction->wasRecentlyCreated) {
                     return response()->json([
                         'message' => 'Duplicate ignored',
-                        'id' => $transaction->id
+                        'id'      => $transaction->id
                     ], 200);
                 }
             } else {
                 $transaction = Transaction::create($transactionData);
             }
 
+            // Create transaction item
             $transaction->transactionItems()->create([
                 'category_id' => $category->id,
                 'description' => "{$request->merchant} - {$request->type}",
-                'amount' => $request->amount,
+                'amount'      => $request->amount,
             ]);
 
             return response()->json([
                 'message' => 'Transaction automated successfully',
-                'id' => $transaction->id
+                'id'      => $transaction->id
             ], 201);
         });
     }
