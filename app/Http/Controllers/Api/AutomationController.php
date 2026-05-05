@@ -8,8 +8,8 @@ use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AutomationController extends Controller
 {
@@ -17,30 +17,84 @@ class AutomationController extends Controller
     {
         Log::info('Automation Request:', $request->all());
 
-        // Skip failed transaction
-        if ($request->status === 'Failed') {
+        // =======================
+        // SKIP FAILED
+        // =======================
+        if (($request->status ?? '') === 'Failed') {
             return response()->json([
                 'message' => 'Skipping failed transaction'
             ], 200);
         }
 
         // =======================
-        // ACCOUNT MATCHING (BY BANK)
+        // USER CONTEXT
         // =======================
-        $account = null;
-        $bank = strtoupper($request->bank ?? '');
+        $userTag = strtoupper(trim($request->user_tag ?? 'SELF'));
 
-        if ($bank === 'MANDIRI') {
-            $account = Account::where('name', 'like', '%MANDIRI%')->first();
-        } elseif ($bank === 'BCA') {
-            $account = Account::where('name', 'like', '%BCA%')->first();
+        // Mapping user
+        $userId = ($userTag === 'PACAR') ? 2 : 1;
+
+        // =======================
+        // ACCOUNT MATCHING
+        // PRIORITY:
+        // 1. account_number (last digits)
+        // 2. bank name fallback
+        // =======================
+        $bank = strtoupper(trim($request->bank ?? ''));
+        $sourceAccount = $request->source_account ?? null;
+
+        $account = null;
+        $lastDigits = null;
+
+        // Extract only numbers from masked account
+        // Example:
+        // ****5882 -> 5882
+        // 0244xxxx35 -> 0035 / 35 (must match DB format)
+        if ($sourceAccount) {
+            $lastDigits = preg_replace('/[^0-9]/', '', $sourceAccount);
         }
 
+        // PRIORITY 1:
+        // Match by exact account_number
+        if ($lastDigits) {
+            $account = Account::where('user_id', $userId)
+                ->where('account_number', $lastDigits)
+                ->first();
+        }
+
+        // PRIORITY 2:
+        // Fallback by bank name
+        if (!$account) {
+            $query = Account::where('user_id', $userId);
+
+            if ($bank === 'MANDIRI') {
+                $query->where('name', 'like', '%MANDIRI%');
+            } elseif ($bank === 'BCA') {
+                $query->where('name', 'like', '%BCA%');
+            } elseif ($bank === 'BNI') {
+                $query->where('name', 'like', '%BNI%');
+            }
+
+            $account = $query->orderBy('id', 'asc')->first();
+        }
+
+        // Account not found
         if (!$account) {
             return response()->json([
-                'message' => "Account not found for bank: {$bank}"
+                'message' => 'Account not found',
+                'user_id' => $userId,
+                'bank' => $bank,
+                'source_account' => $sourceAccount,
+                'last_digits' => $lastDigits,
             ], 404);
         }
+
+        Log::info('Matched Account', [
+            'user_id' => $userId,
+            'account_id' => $account->id,
+            'account_name' => $account->name,
+            'last_digits' => $lastDigits,
+        ]);
 
         // =======================
         // DATE PARSING
@@ -52,18 +106,9 @@ class AutomationController extends Controller
         }
 
         // =======================
-        // DETECT TYPE
+        // TYPE DETECTION
         // =======================
-        $type = 'expense';
-
-        $requestType = strtolower($request->type ?? '');
-
-        if (
-            str_contains($requestType, 'transfer') &&
-            str_contains($requestType, 'credit')
-        ) {
-            $type = 'income';
-        }
+        $type = $request->type ?? 'expense';
 
         // =======================
         // CATEGORY
@@ -86,6 +131,15 @@ class AutomationController extends Controller
             $category,
             $externalId
         ) {
+            // =======================
+            // VALIDATION
+            // =======================
+            if (!$request->amount) {
+                return response()->json([
+                    'message' => 'Invalid amount, skipped'
+                ], 200);
+            }
+
             $transactionData = [
                 'account_id'       => $account->id,
                 'type'             => $type,
@@ -96,7 +150,9 @@ class AutomationController extends Controller
 
             $transaction = null;
 
-            // Prevent duplicate if external_id exists
+            // =======================
+            // DUPLICATE PROTECTION
+            // =======================
             if ($externalId) {
                 $transaction = Transaction::firstOrCreate(
                     ['external_id' => $externalId],
@@ -113,7 +169,9 @@ class AutomationController extends Controller
                 $transaction = Transaction::create($transactionData);
             }
 
-            // Create transaction item
+            // =======================
+            // CREATE ITEM
+            // =======================
             $transaction->transactionItems()->create([
                 'category_id' => $category->id,
                 'description' => "{$request->merchant} - {$request->type}",
@@ -124,6 +182,7 @@ class AutomationController extends Controller
                 'message' => 'Transaction automated successfully',
                 'id'      => $transaction->id
             ], 201);
-        });
+
+        }, 5); // retry up to 5x if deadlock
     }
 }
