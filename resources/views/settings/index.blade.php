@@ -16,6 +16,7 @@
                     ['id' => 'security',      'icon' => 'security',             'label' => 'Security'],
                     ['id' => 'integrations',  'icon' => 'api',                  'label' => 'API Integrations'],
                     ['id' => 'notifications', 'icon' => 'notifications_active', 'label' => 'Notifications'],
+                    ['id' => 'google',        'icon' => 'account_circle',       'label' => 'Google Connection'],
                 ];
                 @endphp
                 @foreach($tabs as $tab)
@@ -380,6 +381,215 @@
                 </form>
             </div>
 
+            {{-- ── GOOGLE TAB ────────────────────────────────────────── --}}
+            <div id="tab-google" class="tab-content hidden space-y-6">
+                {{-- OAuth Configuration Section --}}
+                <section class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined">settings</span>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold">Google API Configuration</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Configure OAuth 2.0 credentials for Google Services.</p>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('settings.google-config') }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Client ID</label>
+                                <input type="text" name="google_client_id" value="{{ old('google_client_id', $googleClientId ?? '') }}"
+                                    class="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary text-sm font-mono text-slate-700 dark:text-slate-350">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Client Secret</label>
+                                <input type="password" name="google_client_secret" placeholder="{{ $hasGoogleSecret ? '••••••••••••••••••••••••••••••••' : 'Enter client secret' }}"
+                                    class="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary text-sm font-mono text-slate-700 dark:text-slate-350">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Authorized Redirect URI</label>
+                            <div class="flex gap-2">
+                                <input type="text" readonly id="redirect_uri_display" value="http://vfos.test/auth/google/callback"
+                                    class="flex-1 bg-slate-100 dark:bg-slate-800/55 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm font-mono text-slate-400 cursor-default select-all">
+                                <button type="button" onclick="copyRedirectUri()"
+                                    class="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 hover:text-primary border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 transition-colors"
+                                    title="Copy to clipboard">
+                                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-2">
+                            <button type="submit"
+                                class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                                Save Configuration
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                {{-- Connection Status Card --}}
+                <section class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="size-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined">account_circle</span>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold">Connected Google Account</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Gmail integration — authorization status</p>
+                        </div>
+                    </div>
+
+                    @php
+                        $statusColors = [
+                            'green'  => ['bg' => 'bg-green-500/10',  'text' => 'text-green-400',  'dot' => 'bg-green-500'],
+                            'yellow' => ['bg' => 'bg-yellow-500/10', 'text' => 'text-yellow-400', 'dot' => 'bg-yellow-500'],
+                            'orange' => ['bg' => 'bg-orange-500/10', 'text' => 'text-orange-400', 'dot' => 'bg-orange-400'],
+                            'slate'  => ['bg' => 'bg-slate-500/10',  'text' => 'text-slate-400',  'dot' => 'bg-slate-450'],
+                            'red'    => ['bg' => 'bg-rose-500/10',   'text' => 'text-rose-450',   'dot' => 'bg-rose-500'],
+                        ];
+                        $color = $statusColors[$googleStatus['status_color'] ?? 'slate'] ?? $statusColors['slate'];
+                    @endphp
+
+                    <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-slate-700 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <span class="size-2 rounded-full {{ $color['dot'] }}"></span>
+                            <div>
+                                <p class="font-semibold text-sm">
+                                    {{ $googleStatus['google_email'] ?? 'No account connected' }}
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                    @if($googleStatus['last_connected_at'])
+                                        Connected {{ $googleStatus['last_connected_at'] }}
+                                    @else
+                                        Not yet connected
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 text-xs font-bold rounded-lg {{ $color['bg'] }} {{ $color['text'] }}">
+                            {{ $googleStatus['status_label'] ?? 'Not Connected' }}
+                        </span>
+                    </div>
+
+                    {{-- Scope Insufficient Warning Banner --}}
+                    @if(($googleStatus['connected'] ?? false) && !($googleStatus['has_required_scopes'] ?? false))
+                        <div class="mt-4 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-rose-400 text-sm flex gap-3 animate-pulse">
+                            <span class="material-symbols-outlined flex-shrink-0">warning</span>
+                            <div>
+                                <p class="font-semibold">Reconnect Required</p>
+                                <p class="text-xs mt-0.5">Your Google connection lacks required permissions. Please click 'Reconnect Google' to authorize the missing scopes.</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Action Buttons --}}
+                    <div class="flex items-center gap-3 mt-5">
+                        @if(!($googleStatus['connected'] ?? false))
+                            {{-- Connect button --}}
+                            @if($googleStatus['app_configured'] ?? false)
+                                <a href="{{ route('google.connect') }}"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-lg transition-all shadow-md shadow-blue-600/20">
+                                    <span class="material-symbols-outlined text-[18px]">link</span>
+                                    Connect Google
+                                </a>
+                            @else
+                                <div class="flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-400 font-bold text-sm rounded-lg cursor-not-allowed">
+                                    <span class="material-symbols-outlined text-[18px]">lock</span>
+                                    Connect Google
+                                </div>
+                                <p class="text-xs text-slate-500 font-semibold">Save Client ID &amp; Secret first to enable this button.</p>
+                            @endif
+                        @elseif(!($googleStatus['has_required_scopes'] ?? false))
+                            {{-- Reconnect button --}}
+                            <a href="{{ route('google.connect') }}"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-lg transition-all shadow-md shadow-amber-500/20">
+                                <span class="material-symbols-outlined text-[18px]">cached</span>
+                                Reconnect Google
+                            </a>
+
+                            {{-- Disconnect button --}}
+                            <form action="{{ route('google.disconnect') }}" method="POST"
+                                class="inline-block"
+                                onsubmit="return confirm('Disconnect your Google account? Automated features will stop working.')">
+                                @csrf
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-450 font-bold text-sm rounded-lg border border-rose-500/30 transition-all">
+                                    <span class="material-symbols-outlined text-[18px]">link_off</span>
+                                    Disconnect
+                                </button>
+                            </form>
+                        @else
+                            {{-- Open Gmail Explorer button --}}
+                            <a href="{{ route('settings.google.gmail-explorer') }}"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/95 text-white font-bold text-sm rounded-lg transition-all shadow-md shadow-primary/20">
+                                <span class="material-symbols-outlined text-[18px]">explore</span>
+                                Open Gmail Explorer
+                            </a>
+
+                            {{-- Disconnect button --}}
+                            <form action="{{ route('google.disconnect') }}" method="POST"
+                                class="inline-block"
+                                onsubmit="return confirm('Disconnect your Google account? Automated features will stop working.')">
+                                @csrf
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-450 font-bold text-sm rounded-lg border border-rose-500/30 transition-all">
+                                    <span class="material-symbols-outlined text-[18px]">link_off</span>
+                                    Disconnect
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    {{-- Scope Info Section --}}
+                    <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Granted Perms / Scopes</p>
+                            @if(empty($googleStatus['granted_scopes']))
+                                <p class="text-xs text-slate-500 italic font-semibold">None granted yet.</p>
+                            @else
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($googleStatus['granted_scopes'] as $scope)
+                                        <span class="px-2.5 py-1 text-[11px] font-mono bg-green-500/10 text-green-500 rounded-md border border-green-500/20">
+                                            {{ str_replace('https://www.googleapis.com/auth/', '', $scope) }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Required Perms / Scopes</p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($googleStatus['required_scopes'] as $scope)
+                                    <span class="px-2.5 py-1 text-[11px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md border border-slate-200 dark:border-slate-700">
+                                        {{ str_replace('https://www.googleapis.com/auth/', '', $scope) }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        @if(!empty($googleStatus['missing_scopes']))
+                            <div>
+                                <p class="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-2">Missing Perms / Scopes</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($googleStatus['missing_scopes'] as $scope)
+                                        <span class="px-2.5 py-1 text-[11px] font-mono bg-rose-500/10 text-rose-455 rounded-md border border-rose-500/20 animate-pulse">
+                                            {{ str_replace('https://www.googleapis.com/auth/', '', $scope) }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                        <p class="text-xs text-slate-500 font-semibold">📌 vFOS only requests read-only authorization. Your data is kept secure and private.</p>
+                    </div>
+                </section>
+            </div>
+
         </div>{{-- /settings content --}}
     </div>
 </div>
@@ -411,7 +621,7 @@ function switchTab(id) {
 // ── Auto-open tab from URL hash ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
     var hash = window.location.hash.replace('#', '');
-    var validTabs = ['profile', 'preferences', 'security', 'integrations', 'notifications'];
+    var validTabs = ['profile', 'preferences', 'security', 'integrations', 'notifications', 'google'];
     if (hash && validTabs.includes(hash)) {
         switchTab(hash);
     }
@@ -443,5 +653,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// ── Google: Copy Redirect URI to clipboard ──────────────────────────────────
+function copyRedirectUri() {
+    var el = document.getElementById('redirect_uri_display');
+    if (el) {
+        var val = el.value || el.innerText;
+        navigator.clipboard.writeText(val).then(function() {
+            alert('Redirect URI copied to clipboard!');
+        });
+    }
+}
 </script>
 @endpush

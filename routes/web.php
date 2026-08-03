@@ -15,6 +15,9 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\WealthStatementController;
 use App\Http\Controllers\ProfitLossController;
+use App\Http\Controllers\Google\GoogleAuthController;
+use App\Http\Controllers\Google\GmailExplorerController;
+use App\Http\Controllers\Google\GmailInboxController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth (Guest only) ────────────────────────────────────────────────────────
@@ -53,8 +56,25 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/security', [SettingController::class, 'updateSecurity'])->name('settings.security');
     Route::post('settings/notifications', [SettingController::class, 'updateNotifications'])->name('settings.notifications');
     Route::post('settings/sync-db', [SettingController::class, 'syncDb'])->name('settings.sync');
+    Route::post('settings/google-config', [SettingController::class, 'saveGoogleConfig'])->name('settings.google-config');
 
     Route::post('investments/refresh', [InvestmentController::class, 'refresh'])->name('investments.refresh');
     Route::post('investments/{investment}/refresh-item', [InvestmentController::class, 'refreshItem'])->name('investments.refresh-item');
 
+    // ── Google OAuth Foundation ───────────────────────────────────────────────
+    Route::get('auth/google/connect', [GoogleAuthController::class, 'connect'])->name('google.connect');
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+    Route::post('auth/google/disconnect', [GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
+
+    // ── Gmail Explorer ────────────────────────────────────────────────────────
+    Route::get('settings/google/gmail-explorer', [GmailExplorerController::class, 'index'])->name('settings.google.gmail-explorer');
+    Route::get('settings/google/gmail-explorer/message/{id}', [GmailExplorerController::class, 'show'])->name('settings.google.gmail-explorer.message');
+
+    // ── Gmail Inbox Sync Cache ────────────────────────────────────────────────
+    Route::get('gmail-inbox', [GmailInboxController::class, 'index'])->name('gmail-inbox.index');
+    Route::post('gmail-inbox/sync', [GmailInboxController::class, 'sync'])->name('gmail-inbox.sync');
+    Route::post('gmail-inbox/parse', [GmailInboxController::class, 'parseAll'])->name('gmail-inbox.parse');
+    Route::post('gmail-inbox/import-selected', [GmailInboxController::class, 'importSelected'])->name('gmail-inbox.import-selected');
+    Route::post('gmail-inbox/import-all-ready', [GmailInboxController::class, 'importAllReady'])->name('gmail-inbox.import-all-ready');
+    Route::get('gmail-inbox/{id}', [GmailInboxController::class, 'show'])->name('gmail-inbox.show');
 });

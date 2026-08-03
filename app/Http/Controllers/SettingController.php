@@ -2,13 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Google\SaveGoogleConfigRequest;
+use App\Repositories\AppSettingRepository;
+use App\Services\Google\GoogleConnectionValidator;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
     public function index()
     {
-        return view('settings.index');
+        $validator = app(GoogleConnectionValidator::class);
+        $googleStatus = auth()->check()
+            ? $validator->getStatus(auth()->id(), 'gmail')
+            : ['connected' => false, 'app_configured' => false];
+
+        $hasGoogleClientId = app(AppSettingRepository::class)->has('google_client_id');
+        $hasGoogleSecret   = app(AppSettingRepository::class)->has('google_client_secret');
+        $googleClientId    = app(AppSettingRepository::class)->get('google_client_id');
+
+        return view('settings.index', compact('googleStatus', 'hasGoogleClientId', 'hasGoogleSecret', 'googleClientId'));
     }
 
     public function updateProfile(Request $request)
@@ -76,15 +88,13 @@ class SettingController extends Controller
     public function syncDb()
     {
         $scriptPath = base_path('scripts\sync_db.ps1');
-        
-        // Execute the powershell script
-        // Note: this will block the request. Doing it synchronously here as it's a local admin tool.
+
         $output = [];
         $returnVar = 0;
-        
+
         exec("powershell.exe -ExecutionPolicy Bypass -File \"$scriptPath\" 2>&1", $output, $returnVar);
 
-        $logPath = storage_path('logs\sync_db_log.txt');
+        $logPath    = storage_path('logs\sync_db_log.txt');
         $logContent = file_exists($logPath) ? file_get_contents($logPath) : implode("\n", $output);
 
         if ($returnVar === 0) {
@@ -94,5 +104,33 @@ class SettingController extends Controller
             return redirect()->to(route('settings.index') . '#integrations')
                 ->withErrors(['sync' => 'Gagal melakukan sinkronisasi database. Cek log untuk detail.'])->with('sync_log', $logContent);
         }
+    }
+
+    // ─── Google Configuration ────────────────────────────────────────────────
+
+    /**
+     * Save the Google OAuth application credentials (client_id + secret).
+     *
+     * Security contract:
+     *  - client_id is stored in plain text (it is not secret).
+     *  - client_secret is ENCRYPTED via Crypt::encryptString before storage.
+     *  - If the secret field is left blank in the form, the existing stored secret is kept.
+     *  - The secret is NEVER returned to the UI in plaintext after the first save.
+     */
+    public function saveGoogleConfig(SaveGoogleConfigRequest $request)
+    {
+        $repo = app(AppSettingRepository::class);
+
+        // Always update the client_id (plain text — not a secret)
+        $repo->set('google_client_id', $request->google_client_id, 'google');
+
+        // Only update the secret if the user actually provided a new one
+        if (filled($request->google_client_secret)) {
+            $repo->set('google_client_secret', $request->google_client_secret, 'google');
+        }
+
+        return redirect()
+            ->to(route('settings.index') . '#google')
+            ->with('success', 'Google OAuth configuration saved.');
     }
 }

@@ -1,0 +1,155 @@
+[
+  {
+    "google_message_id": "fixture-trf-masuk",
+    "subject": "BCA Transfer Masuk - Rp. 1.250.000",
+    "from": "bca@bca.co.id",
+    "plain_body": "M-BCA:\nTANGGAL : 12/07/2026\nJAM : 14:30:15\nDARI REKENING : 1234567890\nKE REKENING : 0244247535\nNAMA PENGIRIM : JONATHAN DOE\nNOMINAL : Rp. 1.250.000,00\nKETERANGAN : Uang Makan Siang\nNO. REFERENSI : TRF88291039",
+    "expected": {
+      "merchant": "JONATHAN DOE",
+      "amount": 1250000,
+      "date": "2026-07-12 14:30:15",
+      "reference": "TRF88291039",
+      "flow": "IN",
+      "type": "TRANSFER",
+      "sourceAccount": "1234567890",
+      "destinationAccount": "0244247535",
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "fixture-trf-keluar",
+    "subject": "BCA Transfer Keluar - Rp. 500.000",
+    "from": "cba@bca.co.id",
+    "plain_body": "M-BCA:\nTANGGAL : 15/07/2026\nJAM : 10:15:00\nDARI REKENING : 0244247535\nKE REKENING : 9876543210\nNAMA PENERIMA : SARAH SMITH\nNOMINAL : Rp. 500.000,00\nKETERANGAN : Bayar Kost\nNO. REFERENSI : TRF77301928",
+    "expected": {
+      "merchant": "SARAH SMITH",
+      "amount": 500000,
+      "date": "2026-07-15 10:15:00",
+      "reference": "TRF77301928",
+      "flow": "OUT",
+      "type": "TRANSFER",
+      "sourceAccount": "0244247535",
+      "destinationAccount": "9876543210",
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "fixture-qris",
+    "subject": "Pembayaran QRIS Berhasil",
+    "from": "bca@bca.co.id",
+    "plain_body": "BERHASIL MELAKUKAN PEMBAYARAN QRIS\nTANGGAL : 20/07/2026\nJAM : 19:45:30\nMERCHANT : INDOMARET JAYA\nNOMINAL : Rp. 45.500,00\nNO. REFERENSI : QRS12345678",
+    "expected": {
+      "merchant": "INDOMARET JAYA",
+      "amount": 45500,
+      "date": "2026-07-20 19:45:30",
+      "reference": "QRS12345678",
+      "flow": "OUT",
+      "type": "QRIS",
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "fixture-debit",
+    "subject": "Transaksi Kartu Debit",
+    "from": "bca@bca.co.id",
+    "plain_body": "TRANSAKSI KARTU DEBIT BERHASIL\nNOMOR KARTU : 4617********8829\nTANGGAL : 25/07/2026\nJAM : 12:00:00\nMERCHANT : TOKOPEDIA INDONESIA\nNOMINAL : Rp. 750.000,00\nNO. REFERENSI : DBT99882211",
+    "expected": {
+      "merchant": "TOKOPEDIA INDONESIA",
+      "amount": 750000,
+      "date": "2026-07-25 12:00:00",
+      "reference": "DBT99882211",
+      "flow": "OUT",
+      "type": "DEBIT_CARD",
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "fixture-credit",
+    "subject": "Transaksi Kartu Kredit Baru",
+    "from": "bca@bca.co.id",
+    "plain_body": "TRANSAKSI KARTU KREDIT BARU\nNOMOR KARTU : 5412********1122\nTANGGAL : 27/07/2026\nJAM : 21:10:00\nMERCHANT : PIZZA HUT DELIVERY\nNOMINAL : Rp. 185.000,00\nNO. REFERENSI : CRD66554433",
+    "expected": {
+      "merchant": "PIZZA HUT DELIVERY",
+      "amount": 185000,
+      "date": "2026-07-27 21:10:00",
+      "reference": "CRD66554433",
+      "flow": "OUT",
+      "type": "CREDIT_CARD",
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "fixture-indo-months-agu",
+    "subject": "BCA Transfer Masuk Agustus",
+    "from": "bca@bca.co.id",
+    "plain_body": "M-BCA:\nTANGGAL : 02 Agustus 2026\nJAM : 09:15:00\nDARI REKENING : 44556677\nKE REKENING : 0244247535\nNAMA PENGIRIM : AGUS PRATAMA\nNOMINAL : Rp. 250.000,00\nKETERANGAN : Hadiah\nNO. REFERENSI : TRF88291040",
+    "expected": {
+      "merchant": "AGUS PRATAMA",
+      "amount": 250000,
+      "date": "2026-08-02 09:15:00",
+      "reference": "TRF88291040",
+      "flow": "IN",
+      "type": "TRANSFER",
+      "sourceAccount": "44556677",
+      "destinationAccount": "0244247535",
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "fixture-indo-months-des",
+    "subject": "BCA Transfer Masuk Desember",
+    "from": "bca@bca.co.id",
+    "plain_body": "M-BCA:\nTANGGAL : 25 Des 2026\nJAM : 09:15:00\nDARI REKENING : 44556677\nKE REKENING : 0244247535\nNAMA PENGIRIM : SANTA CLAUSE\nNOMINAL : Rp. 100.000,00\nKETERANGAN : Natal\nNO. REFERENSI : TRF88291045",
+    "expected": {
+      "merchant": "SANTA CLAUSE",
+      "amount": 100000,
+      "date": "2026-12-25 09:15:00",
+      "reference": "TRF88291045",
+      "flow": "IN",
+      "type": "TRANSFER",
+      "sourceAccount": "44556677",
+      "destinationAccount": "0244247535",
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "fixture-medium-confidence",
+    "subject": "Pembayaran QRIS Tanpa Referensi",
+    "from": "bca@bca.co.id",
+    "plain_body": "BERHASIL MELAKUKAN PEMBAYARAN QRIS\nTANGGAL : 20/07/2026\nJAM : 19:45:30\nMERCHANT : INDOMARET JAYA\nNOMINAL : Rp. 45.500,00",
+    "expected": {
+      "merchant": "INDOMARET JAYA",
+      "amount": 45500,
+      "date": "2026-07-20 19:45:30",
+      "reference": null,
+      "flow": "OUT",
+      "type": "QRIS",
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "MEDIUM"
+    }
+  },
+  {
+    "google_message_id": "fixture-low-confidence",
+    "subject": "Notifikasi BCA Singkat",
+    "from": "bca@bca.co.id",
+    "plain_body": "Transaksi berhasil dilakukan sebesar Rp. 50.000",
+    "expected": {
+      "merchant": "BCA Recipient",
+      "amount": 50000,
+      "date": null,
+      "reference": null,
+      "flow": "OUT",
+      "type": "TRANSFER",
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "LOW"
+    }
+  }
+]

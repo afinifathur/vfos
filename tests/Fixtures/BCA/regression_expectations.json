@@ -1,0 +1,13 @@
+{
+  "example-google-message-id": {
+    "merchant": "INDOMARET",
+    "amount": 50000,
+    "date": "2026-07-02 12:30:00",
+    "reference": "12345678",
+    "flow": "OUT",
+    "type": "QRIS",
+    "sourceAccount": "0244247535",
+    "destinationAccount": null,
+    "confidence": "HIGH"
+  }
+}

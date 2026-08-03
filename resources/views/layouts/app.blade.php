@@ -67,58 +67,62 @@
                 </button>
             </div>
             <nav class="flex-1 px-4 space-y-1 mt-4 overflow-y-auto">
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('/') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/">
-                    <span class="material-symbols-outlined {{ request()->is('/') ? '' : 'group-hover:text-primary' }}">dashboard</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('dashboard') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('dashboard') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('dashboard') ? '' : 'group-hover:text-primary' }}">dashboard</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Dashboard</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('wealth-statement*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('wealth-statement') }}">
-                    <span class="material-symbols-outlined {{ request()->is('wealth-statement') ? '' : 'group-hover:text-primary' }}">description</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('wealth-statement*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('wealth-statement') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('wealth-statement*') ? '' : 'group-hover:text-primary' }}">description</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Wealth Statement</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('profit-loss*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('profit-loss') }}">
-                    <span class="material-symbols-outlined {{ request()->is('profit-loss') ? '' : 'group-hover:text-primary' }}">receipt_long</span>
-                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Profit & Loss</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('profit-loss*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('profit-loss') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('profit-loss*') ? '' : 'group-hover:text-primary' }}">receipt_long</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Profit &amp; Loss</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('transactions*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/transactions">
-                    <span class="material-symbols-outlined {{ request()->is('transactions*') ? '' : 'group-hover:text-primary' }}">swap_horiz</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('transactions*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('transactions.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('transactions*') ? '' : 'group-hover:text-primary' }}">swap_horiz</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Transactions</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('categories*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/categories">
-                    <span class="material-symbols-outlined {{ request()->is('categories*') ? '' : 'group-hover:text-primary' }}">category</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('categories*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('categories.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('categories*') ? '' : 'group-hover:text-primary' }}">category</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Categories</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('accounts*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/accounts">
-                    <span class="material-symbols-outlined {{ request()->is('accounts*') ? '' : 'group-hover:text-primary' }}">account_balance</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('accounts*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('accounts.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('accounts*') ? '' : 'group-hover:text-primary' }}">account_balance</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Accounts</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('goals*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/goals">
-                    <span class="material-symbols-outlined {{ request()->is('goals*') ? '' : 'group-hover:text-primary' }}">flag</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('goals*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('goals.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('goals*') ? '' : 'group-hover:text-primary' }}">flag</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Goals</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('budgets*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/budgets">
-                    <span class="material-symbols-outlined {{ request()->is('budgets*') ? '' : 'group-hover:text-primary' }}">pie_chart</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('budgets*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('budgets.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('budgets*') ? '' : 'group-hover:text-primary' }}">pie_chart</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Budgets</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('debts*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/debts">
-                    <span class="material-symbols-outlined {{ request()->is('debts*') ? '' : 'group-hover:text-primary' }}">credit_card</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('debts*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('debts.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('debts*') ? '' : 'group-hover:text-primary' }}">credit_card</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Debts</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('receivables*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/receivables">
-                    <span class="material-symbols-outlined {{ request()->is('receivables*') ? '' : 'group-hover:text-primary' }}">trending_up</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('receivables*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('receivables.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('receivables*') ? '' : 'group-hover:text-primary' }}">trending_up</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Receivables</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('investments*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/investments">
-                    <span class="material-symbols-outlined {{ request()->is('investments*') ? '' : 'group-hover:text-primary' }}">show_chart</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('investments*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('investments.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('investments*') ? '' : 'group-hover:text-primary' }}">show_chart</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Investments</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('assets*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="/assets">
-                    <span class="material-symbols-outlined {{ request()->is('assets*') ? '' : 'group-hover:text-primary' }}">diamond</span>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('assets*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('assets.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('assets*') ? '' : 'group-hover:text-primary' }}">diamond</span>
                     <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Assets</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('gmail-inbox*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('gmail-inbox.index') }}">
+                    <span class="material-symbols-outlined {{ request()->routeIs('gmail-inbox*') ? '' : 'group-hover:text-primary' }}">inbox</span>
+                    <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Gmail Inbox</span>
                 </a>
                 <div class="pt-8 pb-4">
                     <p class="px-3 text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2 sidebar-text opacity-100 transition-opacity duration-300">User</p>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->is('settings*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('settings.index') }}">
-                        <span class="material-symbols-outlined {{ request()->is('settings*') ? '' : 'group-hover:text-primary' }}">settings</span>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('settings*') ? 'text-primary bg-primary/10 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group' }}" href="{{ route('settings.index') }}">
+                        <span class="material-symbols-outlined {{ request()->routeIs('settings*') ? '' : 'group-hover:text-primary' }}">settings</span>
                         <span class="text-sm sidebar-text opacity-100 transition-opacity duration-300">Settings</span>
                     </a>
                 </div>
@@ -139,7 +143,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
-                    <a href="/transactions/create" class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-semibold transition-all shadow-lg shadow-primary/20">
+                    <a href="{{ route('transactions.create') }}" class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-semibold transition-all shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined text-lg">add</span>
                         Quick Add
                     </a>

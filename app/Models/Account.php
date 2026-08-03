@@ -13,7 +13,7 @@ class Account extends Model
     /** @use HasFactory<\Database\Factories\AccountFactory> */
     use HasFactory, HasOwner;
 
-    protected $fillable = ['user_id', 'name', 'type', 'owner', 'is_active', 'goal_id', 'icon_path', 'initial_balance', 'total_balance'];
+    protected $fillable = ['user_id', 'name', 'type', 'owner', 'is_active', 'goal_id', 'icon_path', 'initial_balance', 'total_balance', 'account_number'];
 
     public function user()
     {
