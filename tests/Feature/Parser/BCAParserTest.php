@@ -12,7 +12,9 @@ use Tests\TestCase;
 
 /**
  * Regression test suite verifying the BCAParser logic.
- * Ensures parity with n8n JavaScript reference implementation.
+ *
+ * Expectations represent canonical business behavior — not legacy wording.
+ * When parser logic changes intentionally, update fixtures first, then tests.
  */
 class BCAParserTest extends TestCase
 {
@@ -23,7 +25,6 @@ class BCAParserTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Resolve ParserManager from Laravel Container (registers production defaults)
         $this->parserManager = app(ParserManager::class);
     }
 
@@ -56,10 +57,9 @@ class BCAParserTest extends TestCase
             $this->assertNotNull($result->parsedMessage, "ParsedMessage must not be null.");
 
             $exp = $fixture['expected'];
-            $tx = $result->parsedTransaction;
+            $tx  = $result->parsedTransaction;
 
             if ($exp['confidence'] === 'LOW' && $tx === null) {
-                // Low confidence may not yield a transaction DTO, which is correct
                 $this->assertEquals(ConfidenceLevel::LOW, $result->confidence);
                 continue;
             }
@@ -71,7 +71,10 @@ class BCAParserTest extends TestCase
 
             if ($exp['date']) {
                 $expectedDate = Carbon::parse($exp['date']);
-                $this->assertTrue($expectedDate->equalTo($tx->transactionDate), "Date mismatch on [{$msg->google_message_id}]. Expected: {$expectedDate->toDateTimeString()}, Got: {$tx->transactionDate->toDateTimeString()}");
+                $this->assertTrue(
+                    $expectedDate->equalTo($tx->transactionDate),
+                    "Date mismatch on [{$msg->google_message_id}]. Expected: {$expectedDate->toDateTimeString()}, Got: {$tx->transactionDate->toDateTimeString()}"
+                );
             } else {
                 $this->assertNull($tx->transactionDate);
             }
@@ -82,10 +85,18 @@ class BCAParserTest extends TestCase
             $this->assertEquals($exp['sourceAccount'], $tx->sourceAccount, "Source Account mismatch on [{$msg->google_message_id}].");
             $this->assertEquals($exp['destinationAccount'], $tx->destinationAccount, "Destination Account mismatch on [{$msg->google_message_id}].");
 
+            // Template & counterparty are new canonical fields
+            if (array_key_exists('template', $exp)) {
+                $this->assertEquals($exp['template'], $tx->template, "Template mismatch on [{$msg->google_message_id}].");
+            }
+            if (array_key_exists('counterparty', $exp)) {
+                $this->assertEquals($exp['counterparty'], $tx->counterparty, "Counterparty mismatch on [{$msg->google_message_id}].");
+            }
+
             $expectedConfidence = match ($exp['confidence']) {
-                'HIGH' => ConfidenceLevel::HIGH,
+                'HIGH'   => ConfidenceLevel::HIGH,
                 'MEDIUM' => ConfidenceLevel::MEDIUM,
-                'LOW' => ConfidenceLevel::LOW,
+                'LOW'    => ConfidenceLevel::LOW,
             };
             $this->assertEquals($expectedConfidence, $tx->confidence, "Confidence mismatch on [{$msg->google_message_id}].");
         }
@@ -93,14 +104,11 @@ class BCAParserTest extends TestCase
 
     /**
      * Run regression assertions on all available July 2026 BCA emails in the database.
-     * Evaluates dynamically based on the regression expectations map.
      */
     public function test_bca_parser_database_july_2026_regression(): void
     {
-        // 1. Check if any BCA messages exist in the database for July 2026
-        // July 2026 timestamps in milliseconds
         $julyStartMs = Carbon::parse('2026-07-01 00:00:00', 'Asia/Jakarta')->timestamp * 1000;
-        $julyEndMs = Carbon::parse('2026-07-31 23:59:59', 'Asia/Jakarta')->timestamp * 1000;
+        $julyEndMs   = Carbon::parse('2026-07-31 23:59:59', 'Asia/Jakarta')->timestamp * 1000;
 
         $dbMessages = InboxMessage::where(function ($q) {
                 $q->where('from', 'like', '%bca.co.id%')
@@ -117,7 +125,6 @@ class BCAParserTest extends TestCase
             $this->markTestSkipped('No July 2026 BCA messages found in the database. Skipping database regression.');
         }
 
-        // 2. Load expectations map
         $expectationsPath = base_path('tests/Fixtures/BCA/regression_expectations.json');
         $expectations = [];
         if (file_exists($expectationsPath)) {
@@ -131,10 +138,9 @@ class BCAParserTest extends TestCase
 
             $this->assertTrue($result->supported, "Database message [{$msg->google_message_id}] should be supported by BCA parser.");
 
-            // If expectations are mapped for this message, assert them strictly
             if (isset($expectations[$msg->google_message_id])) {
                 $exp = $expectations[$msg->google_message_id];
-                $tx = $result->parsedTransaction;
+                $tx  = $result->parsedTransaction;
 
                 $this->assertNotNull($tx, "ParsedTransaction should not be null for mapped message [{$msg->google_message_id}].");
                 $this->assertEquals($exp['merchant'], $tx->merchant);
@@ -145,15 +151,14 @@ class BCAParserTest extends TestCase
                 $this->assertEquals($exp['type'], $tx->type);
                 $this->assertEquals($exp['sourceAccount'], $tx->sourceAccount);
                 $this->assertEquals($exp['destinationAccount'], $tx->destinationAccount);
-                
+
                 $expectedConfidence = match ($exp['confidence']) {
-                    'HIGH' => ConfidenceLevel::HIGH,
+                    'HIGH'   => ConfidenceLevel::HIGH,
                     'MEDIUM' => ConfidenceLevel::MEDIUM,
-                    'LOW' => ConfidenceLevel::LOW,
+                    'LOW'    => ConfidenceLevel::LOW,
                 };
                 $this->assertEquals($expectedConfidence, $tx->confidence);
             } else {
-                // Otherwise run a basic sanity check
                 $tx = $result->parsedTransaction;
                 if ($tx !== null) {
                     $this->assertGreaterThan(0, $tx->amount, "Amount should be positive for [{$msg->google_message_id}].");
@@ -163,5 +168,108 @@ class BCAParserTest extends TestCase
                 }
             }
         }
+    }
+
+    /**
+     * Verify TransactionDescriptionBuilder produces concise labels for BCA templates.
+     */
+    public function test_bca_description_builder_produces_concise_labels(): void
+    {
+        $builder = app(\App\Services\Finance\TransactionDescriptionBuilder::class);
+
+        $qris = new \App\DTO\ParsedTransaction(
+            merchant: 'WARUNG MANADO',
+            amount: 45500,
+            transactionDate: Carbon::parse('2026-07-20 19:45:30'),
+            reference: 'QRS12345678',
+            bank: 'BCA',
+            flow: 'OUT',
+            type: 'QRIS',
+            sourceAccount: null,
+            destinationAccount: null,
+            rawAmount: 'Rp. 45.500,00',
+            status: 'SUCCESS',
+            confidence: ConfidenceLevel::HIGH,
+            notes: null,
+            template: 'BCA_QRIS',
+            counterparty: null,
+        );
+        $this->assertEquals('QRIS Warung Manado', $builder->build($qris));
+
+        $transfer = new \App\DTO\ParsedTransaction(
+            merchant: 'INAYAH TOYIBAH',
+            amount: 750000,
+            transactionDate: Carbon::parse('2026-07-10 13:00:00'),
+            reference: 'MDR77301928',
+            bank: 'BCA',
+            flow: 'OUT',
+            type: 'TRANSFER',
+            sourceAccount: '1234567890',
+            destinationAccount: '9876543210',
+            rawAmount: 'Rp. 750.000,00',
+            status: 'SUCCESS',
+            confidence: ConfidenceLevel::HIGH,
+            notes: null,
+            template: 'BCA_TRANSFER',
+            counterparty: 'INAYAH TOYIBAH',
+        );
+        $this->assertEquals('Transfer to Inayah Toyibah', $builder->build($transfer));
+
+        $cashDeposit = new \App\DTO\ParsedTransaction(
+            merchant: null,
+            amount: 500000,
+            transactionDate: Carbon::parse('2026-08-01 10:00:00'),
+            reference: 'STN00112233',
+            bank: 'BCA',
+            flow: 'IN',
+            type: 'CASH_DEPOSIT',
+            sourceAccount: null,
+            destinationAccount: null,
+            rawAmount: 'Rp. 500.000,00',
+            status: 'SUCCESS',
+            confidence: ConfidenceLevel::MEDIUM,
+            notes: null,
+            template: 'BCA_CASH_DEPOSIT',
+            counterparty: null,
+        );
+        $this->assertEquals('Cash Deposit', $builder->build($cashDeposit));
+
+        $cashWithdraw = new \App\DTO\ParsedTransaction(
+            merchant: null,
+            amount: 300000,
+            transactionDate: Carbon::parse('2026-08-01 11:30:00'),
+            reference: 'TTN00445566',
+            bank: 'BCA',
+            flow: 'OUT',
+            type: 'CASH_WITHDRAW',
+            sourceAccount: null,
+            destinationAccount: null,
+            rawAmount: 'Rp. 300.000,00',
+            status: 'SUCCESS',
+            confidence: ConfidenceLevel::MEDIUM,
+            notes: null,
+            template: 'BCA_CASH_WITHDRAW',
+            counterparty: null,
+        );
+        $this->assertEquals('Cash Withdrawal', $builder->build($cashWithdraw));
+
+        $va = new \App\DTO\ParsedTransaction(
+            merchant: 'by.U',
+            amount: 50000,
+            transactionDate: Carbon::parse('2026-07-21 12:00:00'),
+            reference: 'VA001',
+            bank: 'BCA',
+            flow: 'OUT',
+            type: 'TRANSFER',
+            sourceAccount: null,
+            destinationAccount: null,
+            rawAmount: 'Rp. 50.000,00',
+            status: 'SUCCESS',
+            confidence: ConfidenceLevel::HIGH,
+            notes: null,
+            template: 'BCA_VIRTUAL_ACCOUNT',
+            counterparty: 'SuperKaget3GB',
+        );
+        $this->assertEquals('by.U SuperKaget3GB', $builder->build($va));
     }
 }

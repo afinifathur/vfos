@@ -3,17 +3,29 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Transaction;
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\Subcategory;
+use App\Models\TransactionItem;
+use App\Services\Finance\TransactionCategoryService;
 use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
+    public function __construct(
+        private readonly \App\Services\Finance\Kernel\FinancialKernelService $kernelService
+    ) {}
+
     public function index(Request $request)
     {
-        $query = Transaction::with(['account', 'transactionItems.category']);
+        $query = Transaction::with([
+            'account',
+            'primaryItem.category',
+            'primaryItem.subcategory',
+            'transactionItems.category',
+            'transactionItems.subcategory'
+        ]);
 
         $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->query('end_date', now()->endOfMonth()->toDateString());
@@ -53,7 +65,7 @@ class TransactionController extends Controller
 
         $netSavings = $monthlyIncome - $monthlyExpense;
 
-        $categories = Category::all();
+        $categories = Category::where('is_active', true)->with('subcategories')->get();
         $accounts = Account::all();
 
         return view('transactions.index', compact(
@@ -88,20 +100,17 @@ class TransactionController extends Controller
         ]);
 
         // Ensure account is accessible
-        $account = Account::findOrFail($validated['account_id']);
+        Account::findOrFail($validated['account_id']);
 
-        // Compute total from items (server-side, ignore any user-submitted value)
-        $totalAmount = collect($request->items)->sum('amount');
+        $headerData = [
+            'account_id'       => $validated['account_id'],
+            'to_account_id'    => $validated['to_account_id'] ?? null,
+            'type'             => $validated['type'],
+            'transaction_date' => $validated['transaction_date'],
+            'notes'            => null,
+        ];
 
-        DB::transaction(function () use ($validated, $request, $totalAmount) {
-            $transaction = Transaction::create(array_merge($validated, [
-                'total_amount' => $totalAmount,
-                'notes'        => null,
-            ]));
-            foreach ($request->items as $item) {
-                $transaction->transactionItems()->create($item);
-            }
-        });
+        $this->kernelService->recordTransaction($headerData, $validated['items']);
 
         return redirect()->route('transactions.index')->with('success', 'Transaction recorded successfully.');
     }
@@ -128,26 +137,46 @@ class TransactionController extends Controller
             'items.*.amount'           => 'required|numeric|min:0',
         ]);
 
-        // Compute total from items server-side
-        $totalAmount = collect($request->items)->sum('amount');
+        $headerData = [
+            'account_id'       => $validated['account_id'],
+            'to_account_id'    => $validated['to_account_id'] ?? null,
+            'type'             => $validated['type'],
+            'transaction_date' => $validated['transaction_date'],
+            'notes'            => $transaction->notes, // preserve existing notes
+        ];
 
-        DB::transaction(function () use ($validated, $request, $transaction, $totalAmount) {
-            $transaction->update(array_merge($validated, [
-                'total_amount' => $totalAmount,
-                'notes'        => $transaction->notes, // preserve existing notes
-            ]));
-            $transaction->transactionItems()->delete();
-            foreach ($request->items as $item) {
-                $transaction->transactionItems()->create($item);
-            }
-        });
+        $this->kernelService->reviseTransaction($transaction->id, $headerData, $validated['items']);
 
         return redirect()->route('transactions.index')->with('success', 'Transaction updated successfully.');
     }
 
+    public function inlineCategory(Request $request, Transaction $transaction)
+    {
+        $validated = $request->validate([
+            'category_id'    => 'required|integer',
+            'subcategory_id' => 'nullable|integer',
+        ]);
+
+        $this->kernelService->updateCategory(
+            $transaction->id,
+            (int) $validated['category_id'],
+            $validated['subcategory_id'] ? (int) $validated['subcategory_id'] : null
+        );
+
+        $primaryItem = $transaction->fresh()->primaryItem;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category updated successfully.',
+            'category_id' => $primaryItem->category_id,
+            'subcategory_id' => $primaryItem->subcategory_id,
+        ]);
+    }
+
     public function destroy(Transaction $transaction)
     {
-        $transaction->delete();
+        $this->kernelService->removeTransaction($transaction->id);
         return redirect()->route('transactions.index')->with('success', 'Transaction deleted successfully.');
     }
 }
+

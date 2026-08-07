@@ -38,7 +38,7 @@ class Goal extends Model
     public function getAccountsBalanceAttribute()
     {
         return $this->accounts->sum(function($account) {
-            return $account->calculateBalance();
+            return app(\App\Services\Finance\Kernel\FinancialKernelService::class)->getAccountBalance($account);
         });
     }
 

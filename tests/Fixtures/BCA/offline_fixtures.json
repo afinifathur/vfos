@@ -11,6 +11,8 @@
       "reference": "TRF88291039",
       "flow": "IN",
       "type": "TRANSFER",
+      "template": "BCA_TRANSFER",
+      "counterparty": "JONATHAN DOE",
       "sourceAccount": "1234567890",
       "destinationAccount": "0244247535",
       "confidence": "HIGH"
@@ -28,6 +30,8 @@
       "reference": "TRF77301928",
       "flow": "OUT",
       "type": "TRANSFER",
+      "template": "BCA_TRANSFER",
+      "counterparty": "SARAH SMITH",
       "sourceAccount": "0244247535",
       "destinationAccount": "9876543210",
       "confidence": "HIGH"
@@ -45,6 +49,8 @@
       "reference": "QRS12345678",
       "flow": "OUT",
       "type": "QRIS",
+      "template": "BCA_QRIS",
+      "counterparty": null,
       "sourceAccount": null,
       "destinationAccount": null,
       "confidence": "HIGH"
@@ -62,6 +68,8 @@
       "reference": "DBT99882211",
       "flow": "OUT",
       "type": "DEBIT_CARD",
+      "template": null,
+      "counterparty": null,
       "sourceAccount": null,
       "destinationAccount": null,
       "confidence": "HIGH"
@@ -79,6 +87,8 @@
       "reference": "CRD66554433",
       "flow": "OUT",
       "type": "CREDIT_CARD",
+      "template": null,
+      "counterparty": null,
       "sourceAccount": null,
       "destinationAccount": null,
       "confidence": "HIGH"
@@ -96,6 +106,8 @@
       "reference": "TRF88291040",
       "flow": "IN",
       "type": "TRANSFER",
+      "template": "BCA_TRANSFER",
+      "counterparty": "AGUS PRATAMA",
       "sourceAccount": "44556677",
       "destinationAccount": "0244247535",
       "confidence": "HIGH"
@@ -113,6 +125,8 @@
       "reference": "TRF88291045",
       "flow": "IN",
       "type": "TRANSFER",
+      "template": "BCA_TRANSFER",
+      "counterparty": "SANTA CLAUSE",
       "sourceAccount": "44556677",
       "destinationAccount": "0244247535",
       "confidence": "HIGH"
@@ -130,6 +144,8 @@
       "reference": null,
       "flow": "OUT",
       "type": "QRIS",
+      "template": "BCA_QRIS",
+      "counterparty": null,
       "sourceAccount": null,
       "destinationAccount": null,
       "confidence": "MEDIUM"
@@ -141,15 +157,55 @@
     "from": "bca@bca.co.id",
     "plain_body": "Transaksi berhasil dilakukan sebesar Rp. 50.000",
     "expected": {
-      "merchant": "BCA Recipient",
+      "merchant": "Unknown Merchant",
       "amount": 50000,
       "date": null,
       "reference": null,
       "flow": "OUT",
       "type": "TRANSFER",
+      "template": null,
+      "counterparty": null,
       "sourceAccount": null,
       "destinationAccount": null,
       "confidence": "LOW"
+    }
+  },
+  {
+    "google_message_id": "fixture-cash-deposit",
+    "subject": "Setor Tunai Berhasil",
+    "from": "bca@bca.co.id",
+    "plain_body": "SETOR TUNAI BERHASIL\nTANGGAL : 01/08/2026\nJAM : 10:00:00\nNOMINAL : Rp. 500.000,00\nNO. REFERENSI : STN00112233",
+    "expected": {
+      "merchant": null,
+      "amount": 500000,
+      "date": "2026-08-01 10:00:00",
+      "reference": "STN00112233",
+      "flow": "IN",
+      "type": "CASH_DEPOSIT",
+      "template": "BCA_CASH_DEPOSIT",
+      "counterparty": null,
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "MEDIUM"
+    }
+  },
+  {
+    "google_message_id": "fixture-cash-withdraw",
+    "subject": "Tarik Tunai Berhasil",
+    "from": "bca@bca.co.id",
+    "plain_body": "TARIK TUNAI BERHASIL\nTANGGAL : 01/08/2026\nJAM : 11:30:00\nNOMINAL : Rp. 300.000,00\nNO. REFERENSI : TTN00445566",
+    "expected": {
+      "merchant": null,
+      "amount": 300000,
+      "date": "2026-08-01 11:30:00",
+      "reference": "TTN00445566",
+      "flow": "OUT",
+      "type": "CASH_WITHDRAW",
+      "template": "BCA_CASH_WITHDRAW",
+      "counterparty": null,
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "MEDIUM"
     }
   }
 ]

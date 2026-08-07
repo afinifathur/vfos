@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use App\Models\Account;
 use App\Models\Transaction;
-use App\Models\TransactionItem;
-use App\Models\Category;
-use Illuminate\Support\Facades\DB;
+use App\Services\Finance\Kernel\FinancialKernelService;
 
 class DashboardController extends Controller
 {
+    protected FinancialKernelService $kernel;
+
+    public function __construct(FinancialKernelService $kernel)
+    {
+        $this->kernel = $kernel;
+    }
+
     public function index()
     {
         $userId = auth()->id();
@@ -22,21 +24,11 @@ class DashboardController extends Controller
         $currentSpace = ($role === 'partner') ? 'pacar' : (($role === 'business') ? 'business' : 'afin');
 
         // ── Net Worth ──────────────────────────────────────────────────────────
-        $accounts = Account::all();
-        $netWorth = $accounts->sum(fn($a) => $a->calculateBalance());
+        $netWorth = $this->kernel->calculateLiquidNetWorth($userId);
 
         // ── This Month Income & Expense ───────────────────────────────────────
-        $monthlyIncome = Transaction::where('type', 'income')
-            ->whereMonth('transaction_date', $currentMonth)
-            ->whereYear('transaction_date',  $currentYear)
-            ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
-            ->sum('total_amount');
-
-        $monthlyExpense = Transaction::where('type', 'expense')
-            ->whereMonth('transaction_date', $currentMonth)
-            ->whereYear('transaction_date',  $currentYear)
-            ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
-            ->sum('total_amount');
+        $monthlyIncome = $this->kernel->getMonthlyIncome($currentMonth, $currentYear, $userId);
+        $monthlyExpense = $this->kernel->getMonthlyExpense($currentMonth, $currentYear, $userId);
 
         $savingRate = $monthlyIncome > 0
             ? (($monthlyIncome - $monthlyExpense) / $monthlyIncome) * 100
@@ -49,96 +41,30 @@ class DashboardController extends Controller
             ->get();
 
         // ── Budget vs Actual ─────────────────────────────────────────────────
-        // ── Budget vs Actual ─────────────────────────────────────────────────
-        $budgets = Category::where('type', 'expense')
-            ->with(['transactionItems' => function($q) use ($currentMonth, $currentYear) {
-                $q->whereHas('transaction', function($query) use ($currentMonth, $currentYear) {
-                    $query->whereMonth('transaction_date', $currentMonth)
-                          ->whereYear('transaction_date',  $currentYear);
-                });
-            }])
-            ->get()
-            ->map(function($category) use ($currentMonth, $currentYear) {
-                $actual = $category->transactionItems->sum('amount');
-                $budget = DB::table('budgets')
-                    ->where('category_id', $category->id)
-                    ->where('month', $currentMonth)
-                    ->where('year',  $currentYear)
-                    ->value('allocated_amount') ?? 0;
-
+        $budgets = $this->kernel->getExpenseCategoryBudgetSummary($currentMonth, $currentYear, $userId)
+            ->map(function($budget) {
                 return [
-                    'name'    => $category->name,
-                    'actual'  => $actual,
-                    'budget'  => $budget,
-                    'percent' => $budget > 0 ? min(100, ($actual / $budget) * 100) : ($actual > 0 ? 100 : 0),
+                    'name'    => $budget->name,
+                    'actual'  => $budget->actual,
+                    'budget'  => $budget->budget,
+                    'percent' => $budget->budget > 0 ? min(100, ($budget->actual / $budget->budget) * 100) : ($budget->actual > 0 ? 100 : 0),
                 ];
-            })
-            ->filter(fn($b) => $b['budget'] > 0 || $b['actual'] > 0) // hide empty 0/0 rows
-            ->sortByDesc('actual')
-            ->values();
+            });
 
         // ── Monthly Cashflow Chart (last 12 months) ───────────────────────────
-        $chartLabels  = [];
-        $chartIncome  = [];
-        $chartExpense = [];
-        $chartSavings = [];
-
-        for ($i = 11; $i >= 0; $i--) {
-            $date  = now()->startOfMonth()->subMonths($i);
-            $m     = $date->month;
-            $y     = $date->year;
-
-            $chartLabels[] = $date->format('M Y');
-
-            $inc = Transaction::where('type', 'income')
-                ->whereMonth('transaction_date', $m)
-                ->whereYear('transaction_date',  $y)
-                ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
-                ->sum('total_amount');
-
-            $exp = Transaction::where('type', 'expense')
-                ->whereMonth('transaction_date', $m)
-                ->whereYear('transaction_date',  $y)
-                ->whereDoesntHave('transactionItems.category', fn($q) => $q->where('is_ignored', true))
-                ->sum('total_amount');
-
-            $chartIncome[]  = round($inc);
-            $chartExpense[] = round($exp);
-            $chartSavings[] = round($inc - $exp);
-        }
+        $cashFlow = $this->kernel->getCashFlowSummary($userId, null, 12);
+        $chartLabels  = $cashFlow['chartLabels'];
+        $chartIncome  = $cashFlow['chartIncome'];
+        $chartExpense = $cashFlow['chartExpense'];
+        $chartSavings = $cashFlow['chartSavings'];
 
         // ── Expenses by Category (Donut Chart) ────────────────────────────────
-        $expenseByCategory = TransactionItem::selectRaw('categories.name as label, sum(transaction_items.amount) as total')
-            ->join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
-            ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
-            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
-            ->where('transactions.type', 'expense')
-            ->where('categories.is_ignored', false)
-            ->where('accounts.owner', $currentSpace)
-            ->whereMonth('transactions.transaction_date', $currentMonth)
-            ->whereYear('transactions.transaction_date', $currentYear)
-            ->groupBy('categories.name')
-            ->orderByDesc('total')
-            ->get();
-
+        $expenseByCategory = $this->kernel->getExpenseCategorySummary($currentMonth, $currentYear, $currentSpace, $userId);
         $donutCategoryLabels = $expenseByCategory->pluck('label')->toArray();
         $donutCategoryData   = $expenseByCategory->pluck('total')->toArray();
 
         // ── Expenses by Subcategory (Donut Chart) ─────────────────────────────
-        $expenseBySubcategory = TransactionItem::selectRaw("COALESCE(subcategories.name, 'Uncategorized') as label, sum(transaction_items.amount) as total")
-            ->join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
-            ->leftJoin('subcategories', 'subcategories.id', '=', 'transaction_items.subcategory_id')
-            ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
-            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
-            ->where('transactions.type', 'expense')
-            ->where('categories.is_ignored', false)
-            ->where('accounts.owner', $currentSpace)
-            ->whereMonth('transactions.transaction_date', $currentMonth)
-            ->whereYear('transactions.transaction_date', $currentYear)
-            ->groupBy('label')
-            ->orderByDesc('total')
-            ->get();
-
+        $expenseBySubcategory = $this->kernel->getExpenseSubcategorySummary($currentMonth, $currentYear, $currentSpace, $userId);
         $donutSubcategoryLabels = $expenseBySubcategory->pluck('label')->toArray();
         $donutSubcategoryData   = $expenseBySubcategory->pluck('total')->toArray();
 

@@ -256,6 +256,58 @@ class FinanceImportTest extends TestCase
     }
 
     /**
+     * Test read-only internal transfer detection metadata.
+     */
+    public function test_import_marks_internal_transfer_candidates_in_metadata(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $this->actingAs($user);
+
+        $source = Account::create([
+            'user_id'        => $user->id,
+            'name'           => 'BCA MAIN',
+            'type'           => 'bank',
+            'account_number' => '0035',
+            'total_balance'  => 500000,
+            'owner'          => 'Afin',
+        ]);
+
+        $destination = Account::create([
+            'user_id'        => $user->id,
+            'name'           => 'MANDIRI SAVINGS',
+            'type'           => 'bank',
+            'account_number' => '5882',
+            'total_balance'  => 0,
+            'owner'          => 'Afin',
+        ]);
+
+        $message = InboxMessage::create([
+            'user_id'           => $user->id,
+            'connector'         => 'gmail',
+            'status'            => InboxMessage::STATUS_NEW,
+            'google_message_id' => 'msg_internal_candidate',
+            'subject'           => 'BCA Transfer',
+            'from'              => 'bca@bca.co.id',
+            'plain_body'        => "M-BCA:\nTANGGAL : 02/08/2026\nJAM : 14:30:15\nDARI REKENING : 0035\nKE REKENING : 5882\nNAMA PENERIMA : Afin\nNOMINAL : Rp. 200.000,00\nKETERANGAN : Internal Move\nNO. REFERENSI : TRF88112233",
+            'raw_payload'       => [],
+            'labels'            => [],
+            'internal_date'     => now()->timestamp * 1000,
+        ]);
+
+        $result = $this->importer->import($message);
+
+        $this->assertEquals('SUCCESS', $result->status);
+
+        $message->refresh();
+        $this->assertTrue($message->raw_payload['internal_transfer_candidate'] ?? false);
+
+        $tx = Transaction::findOrFail($result->transactionId);
+        $this->assertEquals('transfer', $tx->type);
+        $this->assertEquals($source->id, $tx->account_id);
+        $this->assertEquals($destination->id, $tx->to_account_id);
+    }
+
+    /**
      * Test controller bulk action endpoints.
      */
     public function test_controller_import_endpoints(): void

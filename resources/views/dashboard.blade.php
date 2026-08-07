@@ -152,7 +152,12 @@
                                             {{ $transaction->type === 'income' ? 'payments' : 'shopping_bag' }}
                                         </span>
                                     </div>
-                                    <span class="text-sm font-medium dark:text-white">{{ $transaction->notes ?: 'Transaction' }}</span>
+                                    @php
+                                        $txLabel = $transaction->transactionItems->first()?->description
+                                                ?: ($transaction->notes ?: 'Transaction');
+                                        $txLabel = \Illuminate\Support\Str::limit($txLabel, 50, '…');
+                                    @endphp
+                                    <span class="text-sm font-medium dark:text-white">{{ $txLabel }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm text-slate-500">

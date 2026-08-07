@@ -3,46 +3,34 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\TransactionItem;
-use App\Models\Transaction;
-use Illuminate\Support\Facades\DB;
+use App\Services\Finance\Kernel\FinancialKernelService;
 
 class ProfitLossController extends Controller
 {
+    protected FinancialKernelService $kernel;
+
+    public function __construct(FinancialKernelService $kernel)
+    {
+        $this->kernel = $kernel;
+    }
+
     public function index(Request $request)
     {
         $userId = auth()->id();
         
-        $month = $request->query('month', now()->month);
-        $year  = $request->query('year', now()->year);
+        $month = (int) $request->query('month', now()->month);
+        $year  = (int) $request->query('year', now()->year);
         $owner = $request->query('owner', 'all');
 
-        $query = TransactionItem::join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
-            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
-            ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
-            ->where('accounts.user_id', $userId)
-            ->where('categories.is_ignored', false)
-            ->where('transactions.type', '!=', 'transfer') // Exclude internal transfers
-            ->whereMonth('transactions.transaction_date', $month)
-            ->whereYear('transactions.transaction_date', $year);
+        // Compile Profit & Loss data through the FinancialKernelService
+        $data = $this->kernel->getProfitLoss($month, $year, $owner, $userId);
 
-        if ($owner !== 'all') {
-            $query->where('accounts.owner', $owner);
-        }
-
-        $items = $query->select(
-            'categories.name as category_name',
-            'categories.type as category_type',
-            DB::raw('SUM(transaction_items.amount) as total')
-        )->groupBy('categories.id', 'categories.name', 'categories.type')->get();
-
-        $incomeItems  = $items->where('category_type', 'income')->sortByDesc('total')->values();
-        $expenseItems = $items->where('category_type', 'expense')->sortByDesc('total')->values();
-
-        $totalIncome  = $incomeItems->sum('total');
-        $totalExpense = $expenseItems->sum('total');
-        $netProfit    = $totalIncome - $totalExpense;
-        $profitMargin = $totalIncome > 0 ? ($netProfit / $totalIncome) * 100 : 0;
+        $incomeItems  = $data['incomeItems'];
+        $expenseItems = $data['expenseItems'];
+        $totalIncome  = $data['totalIncome'];
+        $totalExpense = $data['totalExpense'];
+        $netProfit    = $data['netProfit'];
+        $profitMargin = $data['profitMargin'];
 
         // Generate months for dropdown
         $months = [];
@@ -64,36 +52,19 @@ class ProfitLossController extends Controller
     {
         $userId = auth()->id();
         
-        $month = $request->query('month', now()->month);
-        $year  = $request->query('year', now()->year);
+        $month = (int) $request->query('month', now()->month);
+        $year  = (int) $request->query('year', now()->year);
         $owner = $request->query('owner', 'all');
 
-        $query = TransactionItem::join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
-            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
-            ->join('categories', 'categories.id', '=', 'transaction_items.category_id')
-            ->where('accounts.user_id', $userId)
-            ->where('categories.is_ignored', false)
-            ->where('transactions.type', '!=', 'transfer') // Exclude internal transfers
-            ->whereMonth('transactions.transaction_date', $month)
-            ->whereYear('transactions.transaction_date', $year);
+        // Compile Profit & Loss data through the FinancialKernelService
+        $data = $this->kernel->getProfitLoss($month, $year, $owner, $userId);
 
-        if ($owner !== 'all') {
-            $query->where('accounts.owner', $owner);
-        }
-
-        $items = $query->select(
-            'categories.name as category_name',
-            'categories.type as category_type',
-            DB::raw('SUM(transaction_items.amount) as total')
-        )->groupBy('categories.id', 'categories.name', 'categories.type')->get();
-
-        $incomeItems  = $items->where('category_type', 'income')->sortByDesc('total')->values();
-        $expenseItems = $items->where('category_type', 'expense')->sortByDesc('total')->values();
-
-        $totalIncome  = $incomeItems->sum('total');
-        $totalExpense = $expenseItems->sum('total');
-        $netProfit    = $totalIncome - $totalExpense;
-        $profitMargin = $totalIncome > 0 ? ($netProfit / $totalIncome) * 100 : 0;
+        $incomeItems  = $data['incomeItems'];
+        $expenseItems = $data['expenseItems'];
+        $totalIncome  = $data['totalIncome'];
+        $totalExpense = $data['totalExpense'];
+        $netProfit    = $data['netProfit'];
+        $profitMargin = $data['profitMargin'];
 
         $months = [];
         for ($m = 1; $m <= 12; $m++) {

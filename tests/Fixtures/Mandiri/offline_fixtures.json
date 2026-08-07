@@ -1,0 +1,78 @@
+[
+  {
+    "google_message_id": "mandiri-fixture-transfer-out",
+    "subject": "Mandiri Transfer Keluar",
+    "from": "notifikasi@bankmandiri.co.id",
+    "plain_body": "Transaksi Transfer\nTanggal : 10/07/2026\nWaktu : 13:00:00\nRekening Asal : 1234567890\nRekening Tujuan : 9876543210\nNama Penerima : INAYAH TOYIBAH\nNominal : Rp. 750.000,00\nKeterangan : Kost Agustus\nNo. Referensi : MDR77301928",
+    "expected": {
+      "merchant": "INAYAH TOYIBAH",
+      "amount": 750000,
+      "date": "2026-07-10 13:00:00",
+      "reference": "MDR77301928",
+      "flow": "OUT",
+      "type": "TRANSFER",
+      "template": "MANDIRI_TRANSFER",
+      "counterparty": "INAYAH TOYIBAH",
+      "sourceAccount": "1234567890",
+      "destinationAccount": "9876543210",
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "mandiri-fixture-bifast",
+    "subject": "BI Fast Transfer Berhasil",
+    "from": "notifikasi@bankmandiri.co.id",
+    "plain_body": "Transaksi BI Fast\nTanggal : 11/07/2026\nWaktu : 09:30:00\nRekening Asal : 1234567890\nRekening Tujuan : 1111222233\nNama Penerima : MOHAMMAD GOFIR\nNominal : Rp. 200.000,00\nKeterangan : Transfer\nNo. Referensi : BIF99001122",
+    "expected": {
+      "merchant": "MOHAMMAD GOFIR",
+      "amount": 200000,
+      "date": "2026-07-11 09:30:00",
+      "reference": "BIF99001122",
+      "flow": "OUT",
+      "type": "TRANSFER",
+      "template": "MANDIRI_BIFAST",
+      "counterparty": "MOHAMMAD GOFIR",
+      "sourceAccount": "1234567890",
+      "destinationAccount": "1111222233",
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "mandiri-fixture-qris",
+    "subject": "Pembayaran QRIS Mandiri Berhasil",
+    "from": "notifikasi@bankmandiri.co.id",
+    "plain_body": "Transaksi QRIS Berhasil\nTanggal : 15/07/2026\nWaktu : 19:00:00\nMerchant : WARUNG MANADO\nNominal : Rp. 35.000,00\nNo. Referensi : QMDRI12345",
+    "expected": {
+      "merchant": "WARUNG MANADO",
+      "amount": 35000,
+      "date": "2026-07-15 19:00:00",
+      "reference": "QMDRI12345",
+      "flow": "OUT",
+      "type": "QRIS",
+      "template": "MANDIRI_QRIS",
+      "counterparty": null,
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "HIGH"
+    }
+  },
+  {
+    "google_message_id": "mandiri-fixture-topup",
+    "subject": "Top Up ShopeePay Berhasil",
+    "from": "notifikasi@bankmandiri.co.id",
+    "plain_body": "Top Up Berhasil\nTanggal : 20/07/2026\nWaktu : 10:15:00\nTarget Dompet : ShopeePay\nNominal : Rp. 100.000,00\nNo. Referensi : TPSP99887766",
+    "expected": {
+      "merchant": "ShopeePay",
+      "amount": 100000,
+      "date": "2026-07-20 10:15:00",
+      "reference": "TPSP99887766",
+      "flow": "OUT",
+      "type": "TOPUP",
+      "template": "MANDIRI_TOPUP",
+      "counterparty": null,
+      "sourceAccount": null,
+      "destinationAccount": null,
+      "confidence": "HIGH"
+    }
+  }
+]

@@ -8,11 +8,15 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Service to synchronize Gmail messages into the local InboxMessage cache.
+ *
+ * Only finance emails (bank notifications, payment receipts) are persisted.
+ * Non-finance emails are skipped silently — no InboxMessage record is created.
  */
 class GmailInboxSyncService
 {
     public function __construct(
-        private readonly GmailService $gmailService
+        private readonly GmailService $gmailService,
+        private readonly GmailFinanceFilter $financeFilter,
     ) {}
 
     /**
@@ -62,7 +66,7 @@ class GmailInboxSyncService
                 $threadId  = $stub['threadId'] ?? null;
 
                 try {
-                    // Check duplicate
+                    // Check duplicate by google_message_id first (cheapest check)
                     $exists = InboxMessage::where('user_id', $userId)
                         ->where('google_message_id', $messageId)
                         ->exists();
@@ -75,15 +79,7 @@ class GmailInboxSyncService
                     // Download details
                     $message = $this->gmailService->getMessage($messageId);
 
-                    // Compute checksum on raw payload (Revision 4)
-                    $normalized = InboxMessage::normalizePayload($message);
-                    $checksum = hash('sha256', json_encode($normalized));
-
-                    // Extract HTML and Plain Text
-                    $html = $this->gmailService->extractHtml($message);
-                    $plainText = $this->gmailService->extractPlainText($message);
-
-                    // Extract Headers
+                    // Extract Headers for finance filter check
                     $headers = $message['payload']['headers'] ?? [];
                     $subject = null;
                     $from = null;
@@ -98,6 +94,23 @@ class GmailInboxSyncService
                             $to = $h['value'] ?? null;
                         }
                     }
+
+                    // ── Second-pass finance filter ────────────────────────────
+                    // The Gmail query already restricts results, but this provides
+                    // a hard guarantee: non-finance emails are never stored.
+                    if (!$this->financeFilter->isFinanceEmail($from ?? '', $subject ?? '')) {
+                        $skipped++;
+                        Log::debug("GmailInboxSyncService: skipped non-finance email [{$messageId}] from [{$from}]");
+                        continue;
+                    }
+
+                    // Compute checksum on raw payload (Revision 4)
+                    $normalized = InboxMessage::normalizePayload($message);
+                    $checksum = hash('sha256', json_encode($normalized));
+
+                    // Extract HTML and Plain Text
+                    $html = $this->gmailService->extractHtml($message);
+                    $plainText = $this->gmailService->extractPlainText($message);
 
                     // Save locally (Revision 2 & 5)
                     InboxMessage::create([
@@ -118,7 +131,7 @@ class GmailInboxSyncService
                         'raw_payload'       => $normalized,
                         'labels'            => $message['labelIds'] ?? [],
                         'checksum'          => $checksum,
-                        'status'            => InboxMessage::STATUS_NEW, // NEW status
+                        'status'            => InboxMessage::STATUS_NEW,
                     ]);
 
                     $downloaded++;

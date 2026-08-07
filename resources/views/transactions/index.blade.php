@@ -70,6 +70,13 @@
         </form>
     </div>
 
+    @php
+        $uncategorizedExpense = $categories->first(fn($c) => strtolower($c->name) === 'uncategorized' && $c->type === 'expense');
+        $uncategorizedIncome = $categories->first(fn($c) => strtolower($c->name) === 'uncategorized' && $c->type === 'income');
+        $uncategorizedExpenseId = $uncategorizedExpense?->id ?? 41;
+        $uncategorizedIncomeId = $uncategorizedIncome?->id ?? 42;
+    @endphp
+
     <!-- Transactions Table Card -->
     <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
@@ -78,10 +85,10 @@
                     <tr class="bg-slate-50/50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
                         <th class="px-6 py-4 border-b dark:border-slate-800">Date</th>
                         <th class="px-6 py-4 border-b dark:border-slate-800">Description</th>
-                        <th class="px-6 py-4 border-b dark:border-slate-800">Category</th>
+                        <th class="px-6 py-4 border-b dark:border-slate-800">Category ▼</th>
+                        <th class="px-6 py-4 border-b dark:border-slate-800">Subcategory ▼</th>
                         <th class="px-6 py-4 border-b dark:border-slate-800">Account</th>
                         <th class="px-6 py-4 border-b dark:border-slate-800">Amount</th>
-                        <th class="px-6 py-4 border-b dark:border-slate-800">Status</th>
                         <th class="px-6 py-4 border-b dark:border-slate-800 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -113,18 +120,32 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex flex-wrap gap-1">
-                                    @php
-                                        $uniqueCategories = $transaction->transactionItems
-                                            ->map(fn($item) => $item->category->name ?? 'Uncategorized')
-                                            ->unique();
-                                    @endphp
-                                    @foreach($uniqueCategories as $catName)
-                                        <span class="px-2.5 py-1 text-[10px] font-bold bg-primary/10 text-primary rounded-full uppercase tracking-tighter">
-                                            {{ $catName }}
-                                        </span>
+                            <td class="px-6 py-4 whitespace-nowrap transaction-row" data-transaction-id="{{ $transaction->id }}">
+                                @php
+                                    $defaultCategoryId = ($transaction->type === 'income') ? $uncategorizedIncomeId : $uncategorizedExpenseId;
+                                    $currentCategoryId = $transaction->primaryItem?->category_id ?? $defaultCategoryId;
+                                @endphp
+                                <select class="category-select bg-slate-50 dark:bg-[#1a2333] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 text-xs rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-primary focus:border-transparent w-full min-w-[140px] max-w-[180px]" 
+                                        data-transaction-id="{{ $transaction->id }}"
+                                        data-current-val="{{ $currentCategoryId }}">
+                                    @foreach($categories as $cat)
+                                        @if(($transaction->type === 'income' && $cat->type === 'income') || ($transaction->type !== 'income' && $cat->type === 'expense'))
+                                            <option value="{{ $cat->id }}" {{ ($currentCategoryId == $cat->id) ? 'selected' : '' }}>
+                                                {{ $cat->name }}
+                                            </option>
+                                        @endif
                                     @endforeach
+                                </select>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <select class="subcategory-select bg-slate-50 dark:bg-[#1a2333] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 text-xs rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-primary focus:border-transparent w-full min-w-[140px] max-w-[180px]"
+                                            data-transaction-id="{{ $transaction->id }}"
+                                            data-current-val="{{ $transaction->primaryItem?->subcategory_id ?? '' }}"
+                                            {{ !$currentCategoryId ? 'disabled' : '' }}>
+                                        <option value="">General</option>
+                                    </select>
+                                    <div class="status-indicator size-5 flex items-center justify-center" data-indicator-id="{{ $transaction->id }}"></div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -134,11 +155,6 @@
                                 <p class="text-sm font-bold {{ $transaction->type === 'income' ? 'text-emerald-500' : 'text-red-500' }}">
                                     {{ $transaction->type === 'income' ? '+' : '-' }}Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
                                 </p>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-bold text-emerald-500 bg-emerald-500/10 rounded-md w-fit uppercase">
-                                    <span class="size-1.5 bg-emerald-500 rounded-full"></span> Completed
-                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <div class="flex items-center justify-end gap-2">
@@ -246,6 +262,184 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault(); // Prevent any accidental submit
         fp.open();
     });
+});
+</script>
+
+<script type="application/json" id="categories-data">
+    {!! json_encode($categories->map(function($cat) {
+        return [
+            'id' => $cat->id,
+            'name' => $cat->name,
+            'subcategories' => $cat->subcategories->map(function($sub) {
+                return [
+                    'id' => $sub->id,
+                    'name' => $sub->name
+                ];
+            })
+        ];
+    })) !!}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inline Category/Subcategory Editing logic
+    const categoriesDataElement = document.getElementById('categories-data');
+    if (categoriesDataElement) {
+        const categories = JSON.parse(categoriesDataElement.textContent);
+
+        function populateSubcategories(row, selectedCategoryId, currentSubcategoryId) {
+            const subSelect = row.querySelector('.subcategory-select');
+            subSelect.innerHTML = '<option value="">General</option>';
+
+            if (!selectedCategoryId) {
+                subSelect.disabled = true;
+                return;
+            }
+
+            const category = categories.find(c => c.id == selectedCategoryId);
+            if (category && category.subcategories && category.subcategories.length > 0) {
+                subSelect.disabled = false;
+                category.subcategories.forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub.id;
+                    option.textContent = sub.name;
+                    if (sub.id == currentSubcategoryId) {
+                        option.selected = true;
+                    }
+                    subSelect.appendChild(option);
+                });
+            } else {
+                subSelect.disabled = true;
+            }
+        }
+
+        function saveCategoryUpdate(transactionId, categoryId, subcategoryId, catSelect, subSelect, indicator) {
+            // Disable selects while saving (Requirement 3)
+            catSelect.disabled = true;
+            subSelect.disabled = true;
+
+            // Show Saving... indicator (Requirement 4)
+            indicator.innerHTML = `
+                <div class="flex items-center gap-1 text-[10px] text-slate-400 font-bold whitespace-nowrap">
+                    <svg class="animate-spin h-3.5 w-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Saving...</span>
+                </div>
+            `;
+
+            fetch(`/api/transactions/${transactionId}/inline-category`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    category_id: categoryId,
+                    subcategory_id: subcategoryId || null
+                })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Validation failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Show "✓ Saved" for 1 second (Requirement 4)
+                indicator.innerHTML = `
+                    <div class="flex items-center gap-1 text-[10px] text-emerald-500 font-bold whitespace-nowrap">
+                        <span class="material-symbols-outlined text-sm" style="font-size: 14px;">check_circle</span>
+                        <span>Saved</span>
+                    </div>
+                `;
+
+                // Update data-current-val
+                catSelect.dataset.currentVal = categoryId;
+                subSelect.dataset.currentVal = subcategoryId || '';
+
+                setTimeout(() => {
+                    indicator.innerHTML = '';
+                }, 1000);
+            })
+            .catch(error => {
+                console.error(error);
+                // Show red error icon
+                indicator.innerHTML = `
+                    <div class="flex items-center gap-1 text-[10px] text-red-500 font-bold whitespace-nowrap" title="${error.message}">
+                        <span class="material-symbols-outlined text-sm" style="font-size: 14px;">error</span>
+                        <span>Error</span>
+                    </div>
+                `;
+
+                // Immediately restore Category and Subcategory to their last successfully saved values (Requirement 5)
+                catSelect.value = catSelect.dataset.currentVal;
+                populateSubcategories(row = catSelect.closest('tr'), catSelect.value, subSelect.dataset.currentVal);
+
+                setTimeout(() => {
+                    indicator.innerHTML = '';
+                }, 2000);
+            })
+            .finally(() => {
+                // Re-enable selects (Requirement 3)
+                catSelect.disabled = false;
+                // subSelect should be enabled only if the category has subcategories
+                const category = categories.find(c => c.id == catSelect.value);
+                const hasSubcategories = category && category.subcategories && category.subcategories.length > 0;
+                subSelect.disabled = !hasSubcategories;
+            });
+        }
+
+        // Initialize all rows
+        document.querySelectorAll('.category-select').forEach(catSelect => {
+            const transactionId = catSelect.dataset.transactionId;
+            const subSelect = document.querySelector(`.subcategory-select[data-transaction-id="${transactionId}"]`);
+            if (subSelect) {
+                const row = catSelect.closest('tr');
+                const initialCategoryId = catSelect.dataset.currentVal;
+                const initialSubcategoryId = subSelect.dataset.currentVal;
+                populateSubcategories(row, initialCategoryId, initialSubcategoryId);
+            }
+        });
+
+        // Event listener for Category select change
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('category-select')) {
+                const catSelect = e.target;
+                const transactionId = catSelect.dataset.transactionId;
+                const row = catSelect.closest('tr');
+                const subSelect = row.querySelector('.subcategory-select');
+                const indicator = row.querySelector('.status-indicator');
+                const newCategoryId = catSelect.value;
+
+                // Reset subcategory to null (Requirement 1 & 2)
+                populateSubcategories(row, newCategoryId, null);
+
+                // Immediately save the category update with subcategory_id = null (Requirement 1)
+                saveCategoryUpdate(transactionId, newCategoryId, null, catSelect, subSelect, indicator);
+            }
+        });
+
+        // Event listener for Subcategory select change
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('subcategory-select')) {
+                const subSelect = e.target;
+                const transactionId = subSelect.dataset.transactionId;
+                const row = subSelect.closest('tr');
+                const catSelect = row.querySelector('.category-select');
+                const indicator = row.querySelector('.status-indicator');
+                
+                const categoryId = catSelect.value;
+                const subcategoryId = subSelect.value;
+
+                // Immediately save the category/subcategory update (Requirement 2)
+                saveCategoryUpdate(transactionId, categoryId, subcategoryId, catSelect, subSelect, indicator);
+            }
+        });
+    }
 });
 </script>
 

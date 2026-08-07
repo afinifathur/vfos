@@ -7,6 +7,7 @@ use App\Models\SyncJob;
 use App\Models\User;
 use App\Repositories\GoogleCredentialRepository;
 use App\Services\Google\Gmail\GmailInboxSyncService;
+use App\Services\Google\Gmail\GmailFinanceFilter;
 use App\Services\Google\Gmail\GmailService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
@@ -184,7 +185,7 @@ class GmailInboxSyncTest extends TestCase
         $mockGmailService = Mockery::mock(GmailService::class);
         $mockGmailService->shouldReceive('listMessageStubs')
             ->once()
-            ->with('newer_than:30d', 100)
+            ->with(app(GmailFinanceFilter::class)->buildDefaultQuery(), 100)
             ->andReturn([
                 ['id' => 'existing-msg', 'threadId' => 'thread-1'],
                 ['id' => 'new-msg', 'threadId' => 'thread-2'],
@@ -251,6 +252,76 @@ class GmailInboxSyncTest extends TestCase
         
         $normalized = InboxMessage::normalizePayload($newMsg->raw_payload);
         $this->assertEquals(hash('sha256', json_encode($normalized)), $newMsg->checksum);
+    }
+
+    public function test_sync_uses_finance_default_query_when_query_is_blank_or_placeholder(): void
+    {
+        $user = User::factory()->create();
+
+        $this->credentialRepo->upsert([
+            'user_id'       => $user->id,
+            'provider'      => 'gmail',
+            'google_email'  => 'sync-test@gmail.com',
+            'access_token'  => 'valid',
+            'refresh_token' => 'refresh',
+            'expires_at'    => now()->addHour(),
+            'is_active'     => true,
+            'scopes'        => ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/gmail.readonly'],
+        ]);
+
+        $expectedQuery = app(GmailFinanceFilter::class)->buildDefaultQuery('');
+
+        $mockGmailService = Mockery::mock(GmailService::class);
+        $mockGmailService->shouldReceive('listMessageStubs')
+            ->once()
+            ->with($expectedQuery, 100)
+            ->andReturn([]);
+
+        $this->app->instance(GmailService::class, $mockGmailService);
+
+        $response = $this->actingAs($user)->post(route('gmail-inbox.sync'), [
+            'query'       => 'newer_than:30d',
+            'max_results' => 100,
+        ]);
+
+        $response->assertRedirect(route('gmail-inbox.index'));
+        $job = SyncJob::latest('id')->first();
+        $this->assertSame($expectedQuery, $job?->query);
+    }
+
+    public function test_sync_uses_custom_query_unchanged(): void
+    {
+        $user = User::factory()->create();
+
+        $this->credentialRepo->upsert([
+            'user_id'       => $user->id,
+            'provider'      => 'gmail',
+            'google_email'  => 'sync-test@gmail.com',
+            'access_token'  => 'valid',
+            'refresh_token' => 'refresh',
+            'expires_at'    => now()->addHour(),
+            'is_active'     => true,
+            'scopes'        => ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/gmail.readonly'],
+        ]);
+
+        $customQuery = 'from:(example@bank.com) newer_than:7d';
+
+        $mockGmailService = Mockery::mock(GmailService::class);
+        $mockGmailService->shouldReceive('listMessageStubs')
+            ->once()
+            ->with($customQuery, 100)
+            ->andReturn([]);
+
+        $this->app->instance(GmailService::class, $mockGmailService);
+
+        $response = $this->actingAs($user)->post(route('gmail-inbox.sync'), [
+            'query'       => $customQuery,
+            'max_results' => 100,
+        ]);
+
+        $response->assertRedirect(route('gmail-inbox.index'));
+        $job = SyncJob::latest('id')->first();
+        $this->assertSame($customQuery, $job?->query);
     }
 
     public function test_sync_blocks_request_and_redirects_if_scopes_are_insufficient(): void

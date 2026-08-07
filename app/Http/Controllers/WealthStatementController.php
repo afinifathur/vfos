@@ -2,55 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Account;
+use App\Models\Asset;
 use App\Models\Investment;
 use App\Models\Receivable;
 use App\Models\Debt;
-use App\Models\Asset;
+use App\Services\Finance\Kernel\FinancialKernelService;
 
 class WealthStatementController extends Controller
 {
+    protected FinancialKernelService $kernel;
+
+    public function __construct(FinancialKernelService $kernel)
+    {
+        $this->kernel = $kernel;
+    }
+
     public function index()
     {
         $userId = auth()->id();
 
-        // ── Cash & Bank ──────────────────────────────────────────────────────
-        $accounts  = Account::where('user_id', $userId)->get();
-        $totalCash = $accounts->sum(fn($a) => $a->calculateBalance());
+        // ── Get standard financial summary DTO ─────────────────────────────────
+        $summary = $this->kernel->getAccountSummary($userId);
 
-        // ── Investments ──────────────────────────────────────────────────────
-        $investments       = Investment::where('user_id', $userId)->get();
-        $totalInvestments  = $investments->sum('market_value');
-        $totalInvested     = $investments->sum('total_cost');
-        $investmentPL      = $totalInvestments - $totalInvested;
+        $totalCash        = $summary->liquid_assets;
+        $totalInvestments = $summary->investment;
+        $totalReceivables = $summary->receivable;
+        $totalDebts       = $summary->payable;
+        $totalAssets      = $summary->total_assets;
+        $totalLiabilities = $summary->total_liabilities;
+        $netWorth         = $summary->net_worth;
 
-        // ── Receivables ──────────────────────────────────────────────────────
-        $receivables       = Receivable::where('user_id', $userId)->where('status', 'active')->get();
-        $totalReceivables  = $receivables->sum('remaining_amount');
+        // Fetch collections for display details
+        $accounts    = $this->kernel->getAccountBalances($userId);
+        $investments = Investment::where('user_id', $userId)->get();
+        $receivables = Receivable::where('user_id', $userId)->where('status', 'active')->get();
+        $debts       = Debt::where('user_id', $userId)->where('status', 'active')->get();
 
-        // ── Fixed / Appreciating Assets ──────────────────────────────────────
-        $assets               = Asset::where('user_id', $userId)->get();
-        $appreciatingAssets   = $assets->filter(fn($a) => $a->current_value >= $a->purchase_price);
-        $depreciatingAssets   = $assets->filter(fn($a) => $a->current_value < $a->purchase_price);
-        $totalFixedAssets     = $appreciatingAssets->sum('current_value');
-        $totalDepreciating    = $depreciatingAssets->sum('current_value');
+        $totalInvested = $investments->sum('total_cost');
+        $investmentPL  = $totalInvestments - $totalInvested;
 
-        // ── Debts ────────────────────────────────────────────────────────────
-        $debts      = Debt::where('user_id', $userId)->where('status', 'active')->get();
-        $totalDebts = $debts->sum('remaining_amount');
-
-        // ── Totals ───────────────────────────────────────────────────────────
-        $totalAssets      = $totalCash + $totalInvestments + $totalReceivables + $totalFixedAssets + $totalDepreciating;
-        $totalLiabilities = $totalDebts;
-        $netWorth         = $totalAssets - $totalLiabilities;
+        $assets             = Asset::where('user_id', $userId)->get();
+        $appreciatingAssets = $assets->filter(fn($a) => $a->current_value >= $a->purchase_price);
+        $depreciatingAssets = $assets->filter(fn($a) => $a->current_value < $a->purchase_price);
+        $totalFixedAssets   = $appreciatingAssets->sum('current_value');
+        $totalDepreciating  = $depreciatingAssets->sum('current_value');
 
         // ── Breakdown table rows ──────────────────────────────────────────────
         $breakdownRows = [];
 
         // Accounts (Cash)
         foreach ($accounts as $account) {
-            $bal = $account->calculateBalance();
+            $bal = $this->kernel->getAccountBalance($account);
             if ($bal == 0) continue;
             $breakdownRows[] = [
                 'label'       => $account->name,
@@ -151,32 +153,33 @@ class WealthStatementController extends Controller
 
     public function pdf()
     {
-        // Reuse identical data computation
         $userId = auth()->id();
 
-        $accounts  = Account::where('user_id', $userId)->get();
-        $totalCash = $accounts->sum(fn($a) => $a->calculateBalance());
+        // ── Get standard financial summary DTO ─────────────────────────────────
+        $summary = $this->kernel->getAccountSummary($userId);
 
-        $investments      = Investment::where('user_id', $userId)->get();
-        $totalInvestments = $investments->sum('market_value');
-        $totalInvested    = $investments->sum('total_cost');
-        $investmentPL     = $totalInvestments - $totalInvested;
+        $totalCash        = $summary->liquid_assets;
+        $totalInvestments = $summary->investment;
+        $totalReceivables = $summary->receivable;
+        $totalDebts       = $summary->payable;
+        $totalAssets      = $summary->total_assets;
+        $totalLiabilities = $summary->total_liabilities;
+        $netWorth         = $summary->net_worth;
 
-        $receivables      = Receivable::where('user_id', $userId)->where('status', 'active')->get();
-        $totalReceivables = $receivables->sum('remaining_amount');
+        // Fetch collections for display details
+        $accounts    = $this->kernel->getAccountBalances($userId);
+        $investments = Investment::where('user_id', $userId)->get();
+        $receivables = Receivable::where('user_id', $userId)->where('status', 'active')->get();
+        $debts       = Debt::where('user_id', $userId)->where('status', 'active')->get();
+
+        $totalInvested = $investments->sum('total_cost');
+        $investmentPL  = $totalInvestments - $totalInvested;
 
         $assets             = Asset::where('user_id', $userId)->get();
         $appreciatingAssets = $assets->filter(fn($a) => $a->current_value >= $a->purchase_price);
         $depreciatingAssets = $assets->filter(fn($a) => $a->current_value < $a->purchase_price);
         $totalFixedAssets   = $appreciatingAssets->sum('current_value');
         $totalDepreciating  = $depreciatingAssets->sum('current_value');
-
-        $debts      = Debt::where('user_id', $userId)->where('status', 'active')->get();
-        $totalDebts = $debts->sum('remaining_amount');
-
-        $totalAssets      = $totalCash + $totalInvestments + $totalReceivables + $totalFixedAssets + $totalDepreciating;
-        $totalLiabilities = $totalDebts;
-        $netWorth         = $totalAssets - $totalLiabilities;
 
         $user = auth()->user();
 
@@ -190,4 +193,3 @@ class WealthStatementController extends Controller
         ));
     }
 }
-

@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('subcategories', SubcategoryController::class);
     Route::resource('transactions', TransactionController::class);
+    Route::post('/api/transactions/{transaction}/inline-category', [TransactionController::class, 'inlineCategory'])->name('transactions.inline-category');
     Route::resource('budgets', BudgetController::class);
     Route::resource('debts', DebtController::class);
     Route::resource('receivables', ReceivableController::class);

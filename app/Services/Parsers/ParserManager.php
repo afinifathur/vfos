@@ -10,6 +10,7 @@ use App\Exceptions\UnsupportedMessageException;
 use App\Models\InboxMessage;
 use App\Services\Parsers\Extractor\BcaDocumentExtractor;
 use App\Services\Parsers\Extractor\DefaultDocumentExtractor;
+use App\Services\Parsers\Extractor\MandiriDocumentExtractor;
 
 /**
  * Manager class directing InboxMessages through the Document Extraction layer
@@ -25,7 +26,7 @@ class ParserManager
 
     /**
      * Accepts iterable collections of parsers and extractors.
-     * Falls back to production defaults (BCA) if none provided.
+     * Falls back to production defaults if none provided.
      *
      * @param iterable<ParserInterface> $parsers
      * @param iterable<DocumentExtractorInterface> $extractors
@@ -35,16 +36,18 @@ class ParserManager
         $parsersArray = is_array($parsers) ? $parsers : iterator_to_array($parsers);
         $extractorsArray = is_array($extractors) ? $extractors : iterator_to_array($extractors);
 
-        // Register default production components if not provided (e.g. during automatic container DI)
+        // Register default production components if not provided
         if (empty($parsersArray)) {
             $parsersArray = [
                 app(BCAParser::class),
+                app(MandiriParser::class),
             ];
         }
 
         if (empty($extractorsArray)) {
             $extractorsArray = [
                 app(BcaDocumentExtractor::class),
+                app(MandiriDocumentExtractor::class),
             ];
         }
 
@@ -56,6 +59,7 @@ class ParserManager
             $this->registerExtractor($extractor);
         }
     }
+
 
     /**
      * Manually register a parser instance.

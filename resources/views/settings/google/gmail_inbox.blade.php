@@ -128,50 +128,50 @@
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="md:col-span-3">
-                            <label for="query" class="block text-xs font-semibold text-slate-400 mb-1">Gmail Search Query</label>
-                            <input type="text" name="query" id="query" value="{{ old('query', 'newer_than:30d') }}" 
+                            <label for="query" class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">Gmail Search Query</label>
+                            <input type="text" name="query" id="query" value="{{ old('query', 'from:(bca@bca.co.id OR noreply.livin@bankmandiri.co.id)') }}" 
                                 {{ $reconnectRequired ? 'disabled' : '' }}
-                                class="w-full text-sm rounded-lg bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white focus:ring-primary focus:border-primary p-2 {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                placeholder="newer_than:30d from:(bca@bca.co.id OR cba@bca.co.id)">
+                                class="w-full text-sm rounded-lg bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-primary focus:border-primary p-2 {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                placeholder="from:(bca@bca.co.id OR noreply.livin@bankmandiri.co.id)">
                         </div>
                         <div>
-                            <label for="max_results" class="block text-xs font-semibold text-slate-400 mb-1">Max Download</label>
+                            <label for="max_results" class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">Max Download</label>
                             <select name="max_results" id="max_results" 
                                 {{ $reconnectRequired ? 'disabled' : '' }}
-                                class="w-full text-sm rounded-lg bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white focus:ring-primary focus:border-primary p-2 {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
-                                <option value="20">20 messages</option>
-                                <option value="50">50 messages</option>
-                                <option value="100" selected>100 messages</option>
-                                <option value="250">250 messages</option>
+                                class="w-full text-sm rounded-lg bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary p-2 {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
+                                <option value="20" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">20 messages</option>
+                                <option value="50" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">50 messages</option>
+                                <option value="100" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white" selected>100 messages</option>
+                                <option value="250" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">250 messages</option>
                             </select>
                         </div>
                     </div>
-
+ 
                     <!-- Presets Grid -->
                     <div class="space-y-2">
-                        <span class="block text-xs font-semibold text-slate-400">Quick Sync Presets</span>
+                        <span class="block text-xs font-semibold text-slate-700 dark:text-slate-200">Quick Sync Presets</span>
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('newer_than:30d from:(bca@bca.co.id OR cba@bca.co.id)')" @else disabled @endif
+                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('from:(bca@bca.co.id) newer_than:30d')" @else disabled @endif
                                 class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 text-xs font-medium transition-all {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 Recent BCA
                             </button>
-                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('newer_than:30d from:noreply.livin@bankmandiri.co.id')" @else disabled @endif
+                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('from:(noreply.livin@bankmandiri.co.id) newer_than:30d')" @else disabled @endif
                                 class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 text-xs font-medium transition-all {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 Recent Mandiri
                             </button>
-                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('newer_than:30d from:bnicall@bni.co.id')" @else disabled @endif
+                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('from:(notif@bni.co.id) newer_than:30d')" @else disabled @endif
                                 class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 text-xs font-medium transition-all {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 Recent BNI
                             </button>
-                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('newer_than:7d')" @else disabled @endif
+                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('from:(bca@bca.co.id OR noreply.livin@bankmandiri.co.id) newer_than:7d')" @else disabled @endif
                                 class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 text-xs font-medium transition-all {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 Last 7 Days
                             </button>
-                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('newer_than:30d')" @else disabled @endif
+                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('from:(bca@bca.co.id OR noreply.livin@bankmandiri.co.id) newer_than:30d')" @else disabled @endif
                                 class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 text-xs font-medium transition-all {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 Last 30 Days
                             </button>
-                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('is:unread')" @else disabled @endif
+                            <button type="button" @if(!$reconnectRequired) onclick="setQueryPreset('from:(bca@bca.co.id OR noreply.livin@bankmandiri.co.id) is:unread')" @else disabled @endif
                                 class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 text-xs font-medium transition-all {{ $reconnectRequired ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 Unread
                             </button>
@@ -279,7 +279,7 @@
             <h3 class="text-base font-bold text-slate-900 dark:text-white">Local Messages List</h3>
             <form action="{{ route('gmail-inbox.index') }}" method="GET" class="w-full sm:max-w-xs flex gap-2">
                 <input type="text" name="search" value="{{ $search }}" placeholder="Search cached subject, body, sender..."
-                    class="w-full text-xs rounded-lg bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white focus:ring-primary focus:border-primary p-2">
+                    class="w-full text-xs rounded-lg bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-primary focus:border-primary p-2">
                 <button type="submit" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-250 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-750 flex items-center justify-center">
                     <span class="material-symbols-outlined text-sm">search</span>
                 </button>
@@ -297,14 +297,22 @@
                             </th>
                             <th class="px-6 py-4 font-semibold">Date</th>
                             <th class="px-6 py-4 font-semibold">Connector</th>
-                            <th class="px-6 py-4 font-semibold">Subject</th>
-                            <th class="px-6 py-4 font-semibold">Sender</th>
+                            <th class="px-6 py-4 font-semibold">Description Preview</th>
+                            <th class="px-6 py-4 font-semibold">Counterparty</th>
+                            <th class="px-6 py-4 font-semibold">Amount</th>
+                            <th class="px-6 py-4 font-semibold">Transaction Date</th>
+                            <th class="px-6 py-4 font-semibold">Template</th>
                             <th class="px-6 py-4 font-semibold">Status</th>
-                            <th class="px-6 py-4 font-semibold">Labels</th>
+                            <th class="px-6 py-4 font-semibold">Confidence</th>
+                            <th class="px-6 py-4 font-semibold">Warnings</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
-                        @forelse($messages as $msg)
+                        @forelse($messages as $row)
+                            @php
+                                $msg = $row['model'];
+                                $parsed = $row['parsed'];
+                            @endphp
                             <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 cursor-pointer transition-colors" onclick="openMessageDrawer({{ $msg->id }})">
                                 <td class="px-6 py-4 text-center w-12" onclick="event.stopPropagation()">
                                     <input type="checkbox" name="selected_messages[]" value="{{ $msg->id }}" class="message-checkbox rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary size-4" {{ $msg->status === 'READY' ? '' : 'disabled' }}>
@@ -323,37 +331,65 @@
                                 <td class="px-6 py-4 text-xs max-w-[160px] truncate text-slate-650 dark:text-slate-350">
                                     {{ $msg->from }}
                                 </td>
+                                <td class="px-6 py-4 text-xs max-w-[240px]">
+                                    <div class="space-y-1">
+                                        <div class="font-semibold text-slate-900 dark:text-white truncate">
+                                            {{ $row['description'] ?: 'Needs Review' }}
+                                        </div>
+                                        @if($row['has_internal_transfer_candidate'])
+                                            <span class="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyan-500/10 text-cyan-600 border border-cyan-500/20">
+                                                Internal Transfer Candidate
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-xs max-w-[160px] truncate text-slate-650 dark:text-slate-350">
+                                    {{ $parsed?->counterparty ?: '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-xs whitespace-nowrap font-semibold text-slate-900 dark:text-white">
+                                    {{ $parsed ? number_format($parsed->amount, 0, ',', '.') : '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-xs whitespace-nowrap text-slate-650 dark:text-slate-350">
+                                    {{ $parsed?->transactionDate?->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s') ?: '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-xs">
+                                    @if($parsed?->template)
+                                        <span class="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                            {{ $parsed->template }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-slate-400">-</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs">
-                                    @php
-                                        $statusColors = [
-                                            'NEW' => 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-                                            'SYNCED' => 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-                                            'PARSED' => 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-                                            'READY' => 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-                                            'IMPORTED' => 'bg-green-500/10 text-green-500 border-green-500/20',
-                                            'FAILED' => 'bg-red-500/10 text-red-500 border-red-500/20',
-                                            'IGNORED' => 'bg-slate-500/10 text-slate-400 border-slate-500/20',
-                                            'ARCHIVED' => 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-                                        ];
-                                        $statusColor = $statusColors[$msg->status] ?? 'bg-slate-500/10 text-slate-450 border-slate-500/20';
-                                    @endphp
-                                    <span class="inline-flex px-2.5 py-0.5 text-[10px] font-bold rounded-full border {{ $statusColor }}">
-                                        {{ $msg->status }}
+                                    <span class="inline-flex px-2.5 py-0.5 text-[10px] font-bold rounded-full border {{ $row['status_class'] }}">
+                                        {{ $row['status_label'] }}
+                                    </span>
+                                    @if($row['review_badge'])
+                                        <div class="mt-2">
+                                            <span class="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                                                {{ $row['review_badge'] }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs">
+                                    <span class="inline-flex px-2.5 py-0.5 text-[10px] font-bold rounded-full border
+                                        @if($row['confidence'] === 'HIGH') bg-green-500/10 text-green-600 border-green-500/20
+                                        @elseif($row['confidence'] === 'MEDIUM') bg-amber-500/10 text-amber-700 border-amber-500/20
+                                        @else bg-red-500/10 text-red-600 border-red-500/20
+                                        @endif">
+                                        {{ $row['confidence'] }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 max-w-[200px] truncate">
-                                    @if(!empty($msg->labels))
-                                        <div class="flex gap-1 overflow-hidden max-w-full">
-                                            @foreach(array_slice($msg->labels, 0, 3) as $lbl)
-                                                <span class="inline-flex px-1.5 py-0.5 text-[9px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                                    {{ $lbl }}
+                                <td class="px-6 py-4 max-w-[220px]">
+                                    @if(!empty($row['warnings']))
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($row['warnings'] as $warning)
+                                                <span class="inline-flex px-1.5 py-0.5 text-[9px] font-medium rounded bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                                                    {{ $warning }}
                                                 </span>
                                             @endforeach
-                                            @if(count($msg->labels) > 3)
-                                                <span class="inline-flex px-1.5 py-0.5 text-[9px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-400">
-                                                    +{{ count($msg->labels) - 3 }}
-                                                </span>
-                                            @endif
                                         </div>
                                     @else
                                         <span class="text-xs text-slate-400">-</span>
@@ -362,7 +398,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                <td colspan="11" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                     <span class="material-symbols-outlined text-4xl text-slate-350 dark:text-slate-600 mb-2">inbox</span>
                                     <p class="text-sm font-semibold">No Cached Messages Found</p>
                                     <p class="text-xs mt-1 text-slate-400">Sync with Gmail to download and view messages here.</p>
@@ -445,12 +481,12 @@
 
         <!-- 3. Plain Text Panel -->
         <div id="tabPanelPlainText" class="hidden">
-            <pre id="plainTextContainer" class="p-4 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-700 dark:text-slate-350 overflow-x-auto whitespace-pre-wrap leading-relaxed"></pre>
+            <pre id="plainTextContainer" class="p-4 rounded-xl bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-700 dark:text-slate-350 overflow-x-auto whitespace-pre-wrap leading-relaxed"></pre>
         </div>
 
         <!-- 4. Raw MIME (JSON) Panel -->
         <div id="tabPanelMime" class="hidden">
-            <pre id="mimeJsonContainer" class="p-4 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-xs font-mono text-indigo-650 dark:text-indigo-400 overflow-x-auto whitespace-pre leading-relaxed"></pre>
+            <pre id="mimeJsonContainer" class="p-4 rounded-xl bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-800 text-xs font-mono text-indigo-650 dark:text-indigo-400 overflow-x-auto whitespace-pre leading-relaxed"></pre>
         </div>
 
         <!-- 5. Cache Metadata Panel -->

@@ -7,7 +7,9 @@ use App\Models\InboxMessage;
 use App\Models\SyncJob;
 use App\Repositories\GoogleCredentialRepository;
 use App\Services\Google\GoogleConnectionValidator;
+use App\Services\Google\Gmail\GmailFinanceFilter;
 use App\Services\Google\Gmail\GmailInboxSyncService;
+use App\Services\Finance\TransactionDescriptionBuilder;
 use App\Services\Parsers\ParserManager;
 use App\Services\Finance\FinanceImporter;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +27,8 @@ class GmailInboxController extends Controller
         private readonly GoogleCredentialRepository $credentialRepo,
         private readonly GmailInboxSyncService $syncService,
         private readonly ParserManager $parserManager,
-        private readonly FinanceImporter $importer
+        private readonly FinanceImporter $importer,
+        private readonly TransactionDescriptionBuilder $descriptionBuilder
     ) {}
 
     /**
@@ -68,6 +71,11 @@ class GmailInboxController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $reviewMessages = $messages->getCollection()->map(function (InboxMessage $message) use ($userId) {
+            return $this->buildReviewMessage($message, $userId);
+        });
+        $messages->setCollection($reviewMessages);
+
         return view('settings.google.gmail_inbox', compact(
             'messages',
             'isConnected',
@@ -85,11 +93,19 @@ class GmailInboxController extends Controller
      */
     public function sync(Request $request): RedirectResponse
     {
-        $query = $request->input('query', 'newer_than:30d');
-        $maxResults = (int) $request->input('max_results', 100);
-        $userId = auth()->id();
+        // Resolve the actual Gmail query at the sync entry point.
+        // If the user has not provided a from: clause, fall back to the finance-safe default.
+        $financeFilter = app(GmailFinanceFilter::class);
+        $defaultQuery  = $financeFilter->buildDefaultQuery('');
+        $rawQuery      = $request->input('query');
+        $query         = $this->resolveGmailQuery($rawQuery, $defaultQuery);
+        $maxResults    = (int) $request->input('max_results', 100);
+        $userId        = auth()->id();
 
-        $validator = app(GoogleConnectionValidator::class);
+        // Instrumentation: log the exact query that will be sent to the Gmail API.
+        Log::info('FINAL GMAIL QUERY: ' . $query);
+
+        $validator  = app(GoogleConnectionValidator::class);
         $credential = $this->credentialRepo->findByUserAndProvider($userId, 'gmail');
 
         if (!$credential || !$credential->is_active) {
@@ -131,6 +147,25 @@ class GmailInboxController extends Controller
                 ->route('gmail-inbox.index')
                 ->withErrors(['google' => 'Sync failed: ' . $msg]);
         }
+    }
+
+    /**
+     * Resolve the Gmail query sent to the API.
+     *
+     * Server owns the default. A query is treated as "user-provided" only if it
+     * explicitly contains a from: operator. Any query without from: (including the
+     * UI placeholder 'newer_than:30d') falls back to the finance whitelist default.
+     */
+    private function resolveGmailQuery(?string $rawQuery, string $defaultQuery): string
+    {
+        $normalizedQuery = trim((string) $rawQuery);
+
+        // If no query, or no from: clause is present, the server default takes over.
+        if ($normalizedQuery === '' || !str_contains($normalizedQuery, 'from:')) {
+            return $defaultQuery;
+        }
+
+        return $normalizedQuery;
     }
 
     /**
@@ -178,6 +213,14 @@ class GmailInboxController extends Controller
                 ->withErrors(['import' => 'No selected messages are in READY status.']);
         }
 
+        $skippedCount = count($messageIds) - $messages->count();
+        \App\Services\Finance\Diagnostics\ImportDiagnostics::start();
+        if ($skippedCount > 0) {
+            for ($i = 0; $i < $skippedCount; $i++) {
+                \App\Services\Finance\Diagnostics\ImportDiagnostics::increment('skipped');
+            }
+        }
+
         $imported = 0;
         $duplicate = 0;
         $failed = 0;
@@ -193,12 +236,27 @@ class GmailInboxController extends Controller
             }
         }
 
+        $report = \App\Services\Finance\Diagnostics\ImportDiagnostics::stop();
+
         $successMessage = sprintf(
             'Import complete. Imported: %d, Duplicates Ignored: %d, Failed: %d.',
             $imported,
             $duplicate,
             $failed
         );
+
+        if (!empty($report)) {
+            $successMessage .= sprintf(
+                ' Diagnostics: Fallback: %d, Ambiguous: %d, Resolver Errors: %d, Merchant Learned: %d, Auto Categorized: %d. Avg Resolve: %.1fms, Avg Import: %.1fms.',
+                $report['fallback'] ?? 0,
+                $report['ambiguous'] ?? 0,
+                $report['resolver_errors'] ?? 0,
+                $report['merchant_learned'] ?? 0,
+                $report['auto_categorized'] ?? 0,
+                $report['avg_resolve_time_ms'] ?? 0,
+                $report['avg_import_time_ms'] ?? 0
+            );
+        }
 
         return redirect()
             ->route('gmail-inbox.index')
@@ -222,6 +280,8 @@ class GmailInboxController extends Controller
                 ->with('success', 'No messages found with READY status to import.');
         }
 
+        \App\Services\Finance\Diagnostics\ImportDiagnostics::start();
+
         $imported = 0;
         $duplicate = 0;
         $failed = 0;
@@ -237,12 +297,27 @@ class GmailInboxController extends Controller
             }
         }
 
+        $report = \App\Services\Finance\Diagnostics\ImportDiagnostics::stop();
+
         $successMessage = sprintf(
             'Import complete. Imported: %d, Duplicates Ignored: %d, Failed: %d.',
             $imported,
             $duplicate,
             $failed
         );
+
+        if (!empty($report)) {
+            $successMessage .= sprintf(
+                ' Diagnostics: Fallback: %d, Ambiguous: %d, Resolver Errors: %d, Merchant Learned: %d, Auto Categorized: %d. Avg Resolve: %.1fms, Avg Import: %.1fms.',
+                $report['fallback'] ?? 0,
+                $report['ambiguous'] ?? 0,
+                $report['resolver_errors'] ?? 0,
+                $report['merchant_learned'] ?? 0,
+                $report['auto_categorized'] ?? 0,
+                $report['avg_resolve_time_ms'] ?? 0,
+                $report['avg_import_time_ms'] ?? 0
+            );
+        }
 
         return redirect()
             ->route('gmail-inbox.index')
@@ -346,5 +421,101 @@ class GmailInboxController extends Controller
             'ignored' => $ignoredCount,
             'failed' => $failedCount,
         ];
+    }
+
+    private function buildReviewMessage(InboxMessage $message, int $userId): array
+    {
+        try {
+            $result = $this->parserManager->parse($message, new \App\DTO\ParserContext($message->connector));
+            $tx = $result->parsedTransaction;
+        } catch (\Throwable $e) {
+            $result = null;
+            $tx = null;
+        }
+
+        $description = $tx ? $this->descriptionBuilder->build($tx) : null;
+        $warnings = $this->buildWarnings($tx, $description);
+        $confidence = $this->resolveReviewConfidence($tx);
+
+        return [
+            'model' => $message,
+            'parsed' => $tx,
+            'description' => $description,
+            'warnings' => $warnings,
+            'confidence' => $confidence,
+            'status_label' => $this->statusLabel($message->status),
+            'status_class' => $this->statusClass($message->status),
+            'has_internal_transfer_candidate' => (bool) data_get($message->raw_payload, 'internal_transfer_candidate', false),
+            'review_badge' => $this->reviewBadge($message, $tx, $warnings),
+        ];
+    }
+
+    private function statusLabel(string $status): string
+    {
+        return match ($status) {
+            InboxMessage::STATUS_READY => 'Ready to Import',
+            InboxMessage::STATUS_IMPORTED => 'Imported',
+            InboxMessage::STATUS_IGNORED => 'Ignored',
+            default => 'Needs Review',
+        };
+    }
+
+    private function statusClass(string $status): string
+    {
+        return match ($status) {
+            InboxMessage::STATUS_READY => 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+            InboxMessage::STATUS_IMPORTED => 'bg-green-500/10 text-green-500 border-green-500/20',
+            InboxMessage::STATUS_IGNORED => 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+            default => 'bg-amber-500/10 text-amber-600 border-amber-500/20 ring-1 ring-amber-400/40',
+        };
+    }
+
+    private function buildWarnings(?\App\DTO\ParsedTransaction $tx, ?string $description): array
+    {
+        if (!$tx) {
+            return ['No parsed transaction available'];
+        }
+
+        $warnings = [];
+        if (blank($description)) {
+            $warnings[] = 'Description is empty';
+        }
+        if (blank($tx->merchant)) {
+            $warnings[] = 'Merchant missing';
+        }
+        if (blank($tx->amount) || (int) $tx->amount <= 0) {
+            $warnings[] = 'Amount missing';
+        }
+        if (!$tx->transactionDate) {
+            $warnings[] = 'Transaction date missing';
+        }
+
+        return $warnings;
+    }
+
+    private function resolveReviewConfidence(?\App\DTO\ParsedTransaction $tx): string
+    {
+        if (!$tx || !$tx->amount || !$tx->transactionDate) {
+            return 'LOW';
+        }
+
+        if (blank($tx->merchant) || blank($tx->counterparty)) {
+            return 'MEDIUM';
+        }
+
+        return 'HIGH';
+    }
+
+    private function reviewBadge(InboxMessage $message, ?\App\DTO\ParsedTransaction $tx, array $warnings): string
+    {
+        if (($message->raw_payload['internal_transfer_candidate'] ?? false) === true) {
+            return 'Internal Transfer Candidate';
+        }
+
+        if (!$tx || !empty($warnings)) {
+            return 'Needs Review';
+        }
+
+        return 'Ready';
     }
 }

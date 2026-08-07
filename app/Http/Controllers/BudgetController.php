@@ -5,45 +5,29 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Budget;
 use App\Models\Category;
-use App\Models\TransactionItem;
 use Carbon\Carbon;
+use App\Services\Finance\Kernel\FinancialKernelService;
 
 class BudgetController extends Controller
 {
+    protected FinancialKernelService $kernel;
+
+    public function __construct(FinancialKernelService $kernel)
+    {
+        $this->kernel = $kernel;
+    }
+
     public function index(Request $request)
     {
         $userId = auth()->id();
         $month  = (int) $request->input('month', now()->month);
         $year   = (int) $request->input('year', now()->year);
 
-        $budgets = Budget::with(['category', 'subcategory'])
-            ->where('user_id', $userId)
-            ->where('month', $month)
-            ->where('year', $year)
-            ->get();
+        // Fetch budget summaries through the FinancialKernelService
+        $budgets = $this->kernel->getBudgetSummary($month, $year, $userId);
 
-        $totalBudgeted = 0;
-        $totalSpent    = 0;
-
-        foreach ($budgets as $budget) {
-            $query = TransactionItem::whereHas('transaction', function ($q) use ($month, $year, $userId) {
-                $q->whereMonth('transaction_date', $month)
-                  ->whereYear('transaction_date', $year)
-                  ->whereHas('account', fn($aq) => $aq->where('user_id', $userId));
-            });
-
-            if ($budget->subcategory_id) {
-                $query->where('subcategory_id', $budget->subcategory_id);
-            } else {
-                $query->where('category_id', $budget->category_id);
-            }
-
-            $spent = $query->sum('amount');
-            $budget->spent = $spent;
-            $totalBudgeted += $budget->allocated_amount;
-            $totalSpent    += $spent;
-        }
-
+        $totalBudgeted   = $budgets->sum('allocated_amount');
+        $totalSpent      = $budgets->sum('spent');
         $remainingBudget = $totalBudgeted - $totalSpent;
 
         $availablePeriods = Budget::where('user_id', $userId)

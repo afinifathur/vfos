@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Account;
 use Illuminate\Support\Facades\Storage;
+use App\Services\Finance\Kernel\FinancialKernelService;
 
 class AccountController extends Controller
 {
+    protected FinancialKernelService $kernel;
+
+    public function __construct(FinancialKernelService $kernel)
+    {
+        $this->kernel = $kernel;
+    }
+
     public function index()
     {
-        $accounts = Account::orderBy('name', 'asc')->get();
+        $accounts = $this->kernel->getAccountBalances();
         return view('accounts.index', compact('accounts'));
     }
 
@@ -52,7 +59,6 @@ class AccountController extends Controller
 
     public function update(Request $request, Account $account)
     {
-
         $validated = $request->validate([
             'name'            => 'required',
             'type'            => 'required|in:bank,ewallet,cash,investment,other',
@@ -72,15 +78,13 @@ class AccountController extends Controller
         }
 
         $account->update($validated);
-        $account->total_balance = $account->calculateBalance();
-        $account->save();
+        $this->kernel->refreshAccountBalance($account->id);
 
         return redirect()->route('accounts.index')->with('success', 'Account updated successfully.');
     }
 
     public function destroy(Account $account)
     {
-
         \App\Models\Transaction::where('account_id', $account->id)->update(['account_id' => null]);
 
         if ($account->icon_path) {
@@ -98,7 +102,6 @@ class AccountController extends Controller
 
     public function processReconcile(Request $request, Account $account)
     {
-
         $validated = $request->validate([
             'actual_balance' => 'required|numeric',
             'category_id'    => 'required|exists:categories,id',
@@ -111,31 +114,18 @@ class AccountController extends Controller
         $difference = $actualBalance - $currentBalance;
 
         if (abs($difference) > 0.01) {
-            $type = $difference > 0 ? 'income' : 'expense';
-            $amount = abs($difference);
-
-            \Illuminate\Support\Facades\DB::transaction(function () use ($account, $type, $amount, $validated) {
-                $transaction = \App\Models\Transaction::create([
-                    'account_id'       => $account->id,
-                    'type'             => $type,
-                    'transaction_date' => now()->toDateString(),
-                    'total_amount'     => $amount,
-                    'notes'            => $validated['notes'] ?: 'Account Reconciliation (Opname)',
-                ]);
-
-                $transaction->transactionItems()->create([
-                    'category_id' => $validated['category_id'],
-                    'amount'      => $amount,
-                    'description' => 'System Balance Adjustment',
-                ]);
-
-                $account->update(['total_balance' => $account->total_balance + ($type === 'income' ? $amount : -$amount)]);
-            });
+            $this->kernel->createAdjustment(
+                $account->id,
+                $difference,
+                now()->toDateString(),
+                $validated['notes'] ?: 'Account Reconciliation (Opname)',
+                ['category_id' => $validated['category_id']]
+            );
             
             return redirect()->route('accounts.index')->with('success', 'Account reconciled and transaction created.');
         }
 
-        $account->touch(); // Update `updated_at` only if no difference
+        $account->touch();
         return redirect()->route('accounts.index')->with('success', 'Account is already balanced. Last checked timestamp updated.');
     }
 }
