@@ -2,7 +2,7 @@
 <html class="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'vFOS') }} - Financial OS</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -43,13 +43,17 @@
         }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0F172A; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        @media screen and (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen h-[100dvh] min-h-[100dvh] overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 flex-shrink-0 bg-background-light dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 relative">
+        <aside id="sidebar" class="hidden md:flex w-64 flex-shrink-0 bg-background-light dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 flex-col transition-all duration-300 relative">
             <div class="p-6 flex items-center gap-3 overflow-hidden">
                 <div class="flex-shrink-0 size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
                     <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
@@ -131,9 +135,12 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="h-16 flex items-center justify-between px-8 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-800">
+        <main class="flex-1 flex flex-col overflow-hidden min-w-0">
+            <!-- Mobile Top Bar -->
+            <x-mobile-top-bar />
+
+            <!-- Desktop Header -->
+            <header class="hidden md:flex h-16 items-center justify-between px-8 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-800">
                 <div class="flex items-center gap-4">
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white">@yield('title', 'Dashboard')</h2>
                     <div class="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
@@ -187,7 +194,7 @@
             </header>
 
             <!-- Scrollable Area -->
-            <div class="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/50 dark:bg-background-dark">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 pb-28 md:pb-8 bg-slate-50/50 dark:bg-background-dark">
                 @if(session('success'))
                     <div class="rounded-md bg-green-500/10 p-4 border border-green-500/20">
                         <div class="flex">
@@ -212,6 +219,10 @@
             </div>
         </main>
     </div>
+
+    <!-- Mobile Bottom Navigation Bar & More Menu Sheet -->
+    <x-mobile-bottom-nav />
+    <x-mobile-more-menu />
 <script>
 // ── Global Thousand-Separator Formatter ───────────────────────────────────
 window.initializeNumberFormatting = function (container = document) {
@@ -316,11 +327,13 @@ document.addEventListener('DOMContentLoaded', function () {
     let isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
     if (isMinimized) updateSidebar(true);
 
-    sidebarToggle.addEventListener('click', () => {
-        isMinimized = !isMinimized;
-        localStorage.setItem('sidebarMinimized', isMinimized);
-        updateSidebar(isMinimized);
-    });
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', () => {
+            isMinimized = !isMinimized;
+            localStorage.setItem('sidebarMinimized', isMinimized);
+            updateSidebar(isMinimized);
+        });
+    }
 });
 </script>
 @stack('scripts')
