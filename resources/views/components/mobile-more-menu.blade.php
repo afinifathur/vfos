@@ -8,7 +8,7 @@
 
     <!-- Slide-up Bottom Sheet -->
     <div id="mobileMoreSheet" 
-         class="absolute inset-x-0 bottom-0 max-h-[85vh] bg-white dark:bg-[#1E293B] rounded-t-3xl shadow-2xl flex flex-col transform translate-y-full transition-transform duration-300 ease-out border-t border-slate-200 dark:border-slate-700/60">
+         class="absolute inset-x-0 bottom-0 max-h-[85vh] max-h-[85dvh] bg-white dark:bg-[#1E293B] rounded-t-3xl shadow-2xl flex flex-col min-h-0 transform translate-y-full transition-transform duration-300 ease-out border-t border-slate-200 dark:border-slate-700/60 overscroll-contain">
         
         <!-- Sheet Handle & Header -->
         <div class="px-5 pt-3 pb-3 flex-shrink-0 border-b border-slate-100 dark:border-slate-800">
@@ -32,7 +32,7 @@
         </div>
 
         <!-- Scrollable Navigation Groups -->
-        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-5" style="padding-bottom: max(env(safe-area-inset-bottom, 0px), 2rem);">
+        <div class="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-5" style="padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4rem); -webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
             
             <!-- Group 1: Perencanaan (Planning) -->
             <div>

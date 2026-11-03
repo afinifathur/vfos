@@ -3,69 +3,74 @@
 @section('title', 'Transaction Management')
 
 @section('content')
-<div class="space-y-8">
-    <header class="flex justify-between items-center mb-8 bg-card-dark p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+<div class="space-y-6 sm:space-y-8 max-w-full">
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 bg-card-dark p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
         <div class="absolute -right-4 -top-4 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
         <div class="relative z-10">
-            <h2 class="text-3xl font-black tracking-tight text-white font-outfit">Transactions Ledger</h2>
-            <p class="text-slate-400 text-sm">Detailed history of your financial activities and cash flow.</p>
+            <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white font-outfit">Transactions Ledger</h2>
+            <p class="text-slate-400 text-xs sm:text-sm mt-0.5">Detailed history of your financial activities and cash flow.</p>
         </div>
-        <a href="{{ route('transactions.create') }}" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-xl flex items-center gap-2 transition-all shadow-xl shadow-primary/20 relative z-10">
+        <a href="{{ route('transactions.create') }}" class="w-full sm:w-auto justify-center bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-5 sm:py-3 sm:px-8 rounded-xl flex items-center gap-2 transition-all shadow-xl shadow-primary/20 relative z-10 text-sm sm:text-base flex-shrink-0">
             <span class="material-symbols-outlined">add_circle</span>
             Record Transaction
         </a>
     </header>
 
     <!-- Filter Bar Card -->
-    <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-        <form action="{{ route('transactions.index') }}" method="GET" class="flex flex-wrap items-center gap-4">
-            <div class="flex-1 min-w-[280px]">
+    <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <form action="{{ route('transactions.index') }}" method="GET" class="flex flex-col md:flex-row md:items-center gap-3">
+            <div class="flex-1 min-w-0">
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                     <input name="search" value="{{ request('search') }}" class="w-full bg-slate-50 dark:bg-[#223149] border-none focus:ring-2 focus:ring-primary text-sm rounded-lg pl-10 pr-4 py-2.5 text-slate-200 placeholder:text-slate-500" placeholder="Search by description, merchant, or reference..." type="text"/>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <select name="account_id" onchange="this.form.submit()" class="appearance-none bg-slate-50 dark:bg-[#223149] border-none text-sm rounded-lg pl-10 pr-10 py-2.5 focus:ring-2 focus:ring-primary min-w-[160px] text-slate-300">
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3 w-full md:w-auto">
+                <div class="relative flex-1 sm:flex-none min-w-[130px]">
+                    <select name="account_id" onchange="this.form.submit()" class="w-full appearance-none bg-slate-50 dark:bg-[#223149] border-none text-sm rounded-lg pl-9 pr-8 py-2.5 focus:ring-2 focus:ring-primary text-slate-300">
                         <option value="">All Accounts</option>
                         @foreach($accounts as $account)
                             <option value="{{ $account->id }}" {{ request('account_id') == $account->id ? 'selected' : '' }}>{{ $account->name }}</option>
                         @endforeach
                     </select>
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">account_balance</span>
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+                    <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">account_balance</span>
+                    <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">expand_more</span>
                 </div>
-                <div class="relative">
-                    <select name="category" onchange="this.form.submit()" class="appearance-none bg-slate-50 dark:bg-[#223149] border-none text-sm rounded-lg pl-10 pr-10 py-2.5 focus:ring-2 focus:ring-primary min-w-[160px] text-slate-300">
+                <div class="relative flex-1 sm:flex-none min-w-[130px]">
+                    <select name="category" onchange="this.form.submit()" class="w-full appearance-none bg-slate-50 dark:bg-[#223149] border-none text-sm rounded-lg pl-9 pr-8 py-2.5 focus:ring-2 focus:ring-primary text-slate-300">
                         <option value="">All Categories</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                         @endforeach
                     </select>
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">category</span>
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+                    <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">category</span>
+                    <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">expand_more</span>
                 </div>
-                <div class="relative" id="date_range_wrapper">
+                <div class="relative w-full sm:w-auto" id="date_range_wrapper">
                     <input type="hidden" name="start_date" id="start_date" value="{{ request('start_date', now()->startOfMonth()->toDateString()) }}">
                     <input type="hidden" name="end_date" id="end_date" value="{{ request('end_date', now()->endOfMonth()->toDateString()) }}">
                     
-                    <button type="button" id="date_range_picker_btn" class="flex items-center gap-2 bg-slate-50 dark:bg-[#223149] text-sm rounded-lg px-4 py-2.5 text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2d3d5a] transition-colors border-none outline-none">
-                        <span class="material-symbols-outlined !text-lg">calendar_month</span>
-                        <span id="date_display">
-                            @if(request('start_date') && request('end_date'))
-                                {{ \Carbon\Carbon::parse(request('start_date'))->format('M d, Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d, Y') }}
-                            @else
-                                {{ now()->startOfMonth()->format('M d, Y') }} - {{ now()->endOfMonth()->format('M d, Y') }}
-                            @endif
-                        </span>
+                    <button type="button" id="date_range_picker_btn" class="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 bg-slate-50 dark:bg-[#223149] text-sm rounded-lg px-3.5 py-2.5 text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2d3d5a] transition-colors border-none outline-none">
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="material-symbols-outlined !text-lg flex-shrink-0">calendar_month</span>
+                            <span id="date_display" class="truncate text-xs sm:text-sm">
+                                @if(request('start_date') && request('end_date'))
+                                    {{ \Carbon\Carbon::parse(request('start_date'))->format('M d, Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d, Y') }}
+                                @else
+                                    {{ now()->startOfMonth()->format('M d, Y') }} - {{ now()->endOfMonth()->format('M d, Y') }}
+                                @endif
+                            </span>
+                        </div>
+                        <span class="material-symbols-outlined !text-base text-slate-400 flex-shrink-0 sm:hidden">expand_more</span>
                     </button>
                     {{-- Invisible input for Flatpickr trigger --}}
                     <input type="text" id="flatpickr_hidden" class="absolute inset-0 opacity-0 pointer-events-none">
                 </div>
-                <button type="button" class="p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <span class="material-symbols-outlined">filter_list</span>
-                </button>
+                @if(request('search') || request('account_id') || request('category') || (request('start_date') && request('start_date') != now()->startOfMonth()->toDateString()))
+                    <a href="{{ route('transactions.index') }}" class="p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center flex-shrink-0" title="Reset Filters">
+                        <span class="material-symbols-outlined text-lg">filter_alt_off</span>
+                    </a>
+                @endif
             </div>
         </form>
     </div>
@@ -79,8 +84,15 @@
 
     <!-- Transactions Table Card -->
     <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+        <!-- Mobile Table Pan Hint -->
+        <div class="md:hidden px-4 py-2 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-xs text-primary">swipe</span>
+                Geser tabel untuk melihat seluruh rincian transaksi
+            </span>
+        </div>
+        <div class="overflow-x-auto w-full overscroll-x-contain" style="-webkit-overflow-scrolling: touch;">
+            <table class="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                     <tr class="bg-slate-50/50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
                         <th class="px-6 py-4 border-b dark:border-slate-800">Date</th>
@@ -149,7 +161,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <p class="text-sm dark:text-slate-300">{{ $transaction->account?->name ?? '— (akun dihapus)' }}</p>
+                                <p class="text-sm dark:text-slate-300">{{ $transaction->account?->name ?? 'â€” (akun dihapus)' }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <p class="text-sm font-bold {{ $transaction->type === 'income' ? 'text-emerald-500' : 'text-red-500' }}">
@@ -191,32 +203,32 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex items-center gap-4">
-            <div class="size-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                <span class="material-symbols-outlined !text-3xl">trending_up</span>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 flex items-center gap-3.5 sm:gap-4">
+            <div class="size-10 sm:size-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 flex-shrink-0">
+                <span class="material-symbols-outlined !text-2xl sm:!text-3xl">trending_up</span>
             </div>
             <div>
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Monthly Income</p>
-                <h4 class="text-xl font-bold dark:text-white">Rp {{ number_format($monthlyIncome, 0, ',', '.') }}</h4>
+                <h4 class="text-lg sm:text-xl font-bold dark:text-white whitespace-nowrap">Rp {{ number_format($monthlyIncome, 0, ',', '.') }}</h4>
             </div>
         </div>
-        <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex items-center gap-4">
-            <div class="size-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
-                <span class="material-symbols-outlined !text-3xl">trending_down</span>
+        <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 flex items-center gap-3.5 sm:gap-4">
+            <div class="size-10 sm:size-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 flex-shrink-0">
+                <span class="material-symbols-outlined !text-2xl sm:!text-3xl">trending_down</span>
             </div>
             <div>
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Monthly Expenses</p>
-                <h4 class="text-xl font-bold dark:text-white">Rp {{ number_format($monthlyExpense, 0, ',', '.') }}</h4>
+                <h4 class="text-lg sm:text-xl font-bold dark:text-white whitespace-nowrap">Rp {{ number_format($monthlyExpense, 0, ',', '.') }}</h4>
             </div>
         </div>
-        <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex items-center gap-4">
-            <div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <span class="material-symbols-outlined !text-3xl">savings</span>
+        <div class="bg-white dark:bg-[#1a2333] border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 flex items-center gap-3.5 sm:gap-4">
+            <div class="size-10 sm:size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                <span class="material-symbols-outlined !text-2xl sm:!text-3xl">savings</span>
             </div>
             <div>
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Net Savings</p>
-                <h4 class="text-xl font-bold dark:text-white">Rp {{ number_format($netSavings, 0, ',', '.') }}</h4>
+                <h4 class="text-lg sm:text-xl font-bold dark:text-white whitespace-nowrap">Rp {{ number_format($netSavings, 0, ',', '.') }}</h4>
             </div>
         </div>
     </div>
@@ -349,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                // Show "✓ Saved" for 1 second (Requirement 4)
+                // Show "âœ“ Saved" for 1 second (Requirement 4)
                 indicator.innerHTML = `
                     <div class="flex items-center gap-1 text-[10px] text-emerald-500 font-bold whitespace-nowrap">
                         <span class="material-symbols-outlined text-sm" style="font-size: 14px;">check_circle</span>

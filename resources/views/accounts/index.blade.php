@@ -3,52 +3,52 @@
 @section('title', 'Financial Accounts')
 
 @section('content')
-<div class="space-y-10 pb-12">
+<div class="space-y-6 sm:space-y-10 pb-8 sm:pb-12">
     <!-- Premium Header -->
-    <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card-dark p-8 rounded-2xl border border-slate-800 shadow-2xl relative overflow-hidden">
-        <div class="absolute -right-8 -top-8 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 bg-card-dark p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
         <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
             <div>
-                <h2 class="text-4xl font-black tracking-tight text-white font-outfit">Financial Accounts</h2>
-                <p class="text-slate-400 text-sm mt-1">Total liquidity across {{ $accounts->count() }} specialized institutions.</p>
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white font-outfit">Financial Accounts</h2>
+                <p class="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">Total liquidity across {{ $accounts->count() }} specialized institutions.</p>
             </div>
-            <div class="h-10 w-px bg-slate-800 hidden md:block"></div>
-            <div class="flex flex-col">
+            <div class="h-8 w-px bg-slate-800 hidden md:block"></div>
+            <div class="flex flex-row md:flex-col items-baseline md:items-start gap-2 md:gap-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-800">
                 <span class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">Net Worth</span>
-                <span class="text-2xl font-black text-white tracking-tighter">
+                <span class="text-xl sm:text-2xl font-black text-white tracking-tighter whitespace-nowrap">
                     Rp {{ number_format($accounts->sum('total_balance'), 0, ',', '.') }}
                 </span>
             </div>
         </div>
-        <div class="flex items-center gap-4 relative z-10">
+        <div class="flex items-center gap-3 sm:gap-4 relative z-10 w-full sm:w-auto">
             <form action="{{ route('accounts.index') }}" method="GET" class="relative group hidden sm:block">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg group-focus-within:text-primary transition-colors">search</span>
-                <input name="search" value="{{ request('search') }}" class="pl-11 pr-4 py-3 bg-slate-900/50 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none w-72 transition-all placeholder:text-slate-600 font-medium" placeholder="Search accounts...">
+                <input name="search" value="{{ request('search') }}" class="pl-11 pr-4 py-2.5 bg-slate-900/50 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none w-56 lg:w-72 transition-all placeholder:text-slate-600 font-medium" placeholder="Search accounts...">
             </form>
-            <a href="{{ route('accounts.create') }}" class="bg-primary hover:bg-primary/90 text-white px-6 py-4 rounded-xl text-sm font-black flex items-center gap-2 transition-all shadow-xl shadow-primary/20 active:scale-95 group">
-                <span class="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform">add_circle</span>
+            <a href="{{ route('accounts.create') }}" class="w-full sm:w-auto justify-center bg-primary hover:bg-primary/90 text-white px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all shadow-xl shadow-primary/20 active:scale-95 group">
+                <span class="material-symbols-outlined text-base sm:text-lg group-hover:rotate-90 transition-transform">add_circle</span>
                 Link New Account
             </a>
         </div>
     </header>
 
     <!-- Accounts Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
         @forelse($accounts as $account)
-        <div class="bg-card-dark border border-slate-800 p-6 rounded-3xl hover:border-primary/40 transition-all group relative shadow-lg hover:shadow-primary/5">
-            <div class="flex justify-between items-start mb-6">
+        <div class="bg-card-dark border border-slate-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl hover:border-primary/40 transition-all group relative shadow-lg hover:shadow-primary/5">
+            <div class="flex justify-between items-start mb-4 sm:mb-6">
                 <!-- Custom Icon / Fallback -->
-                <div class="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-800 group-hover:border-primary/30 transition-all shadow-inner">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-800 group-hover:border-primary/30 transition-all shadow-inner flex-shrink-0">
                     @if($account->icon_path)
                         <img src="{{ asset('storage/' . $account->icon_path) }}" class="w-full h-full object-cover">
                     @else
-                        <span class="material-symbols-outlined text-2xl text-slate-500 group-hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl text-slate-500 group-hover:text-primary transition-colors">
                             @if($account->type === 'bank') account_balance @elseif($account->type === 'ewallet') account_balance_wallet @elseif($account->type === 'cash') payments @else category @endif
                         </span>
                     @endif
                 </div>
                 
-                <div class="flex flex-col items-end gap-2">
+                <div class="flex flex-col items-end gap-1.5 sm:gap-2">
                     <span class="text-[9px] font-black {{ $account->is_active ? 'text-emerald-500 bg-emerald-500/10' : 'text-slate-500 bg-slate-800/50' }} flex items-center gap-1.5 px-2.5 py-1 rounded-full uppercase tracking-widest border border-white/5">
                         <span class="w-1.5 h-1.5 rounded-full {{ $account->is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500' }}"></span>
                         {{ $account->is_active ? 'Synced' : 'Hidden' }}
@@ -58,27 +58,27 @@
             </div>
 
             <div class="space-y-1">
-                <h3 class="text-xl font-bold text-white leading-tight group-hover:text-primary transition-colors">{{ $account->name }}</h3>
+                <h3 class="text-lg sm:text-xl font-bold text-white leading-tight group-hover:text-primary transition-colors">{{ $account->name }}</h3>
                 <p class="text-xs text-slate-500 font-medium capitalize">{{ $account->type }} Institutional</p>
             </div>
 
-            <div class="mt-8">
+            <div class="mt-4 sm:mt-6">
                 <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1 mx-1">Liquid Balance</p>
                 @php
                     $balance = $account->total_balance;
                 @endphp
                 <div class="flex items-baseline gap-2">
-                    <span class="text-slate-400 font-bold text-sm">Rp</span>
-                    <span class="text-3xl font-black text-white leading-none tracking-tighter {{ $balance < 0 ? 'text-rose-500' : '' }}">
+                    <span class="text-slate-400 font-bold text-xs sm:text-sm">Rp</span>
+                    <span class="text-2xl sm:text-3xl font-black text-white leading-none tracking-tighter {{ $balance < 0 ? 'text-rose-500' : '' }}">
                         {{ number_format($balance, 0, ',', '.') }}
                     </span>
                 </div>
             </div>
 
-            <!-- Absolute positioned quick actions on hover -->
-            <div class="mt-8 pt-5 border-t border-white/5 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity">
+            <!-- Absolute positioned quick actions on hover / mobile touch friendly -->
+            <div class="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 opacity-90 sm:opacity-60 sm:group-hover:opacity-100 transition-opacity">
                 <span class="text-[10px] text-slate-500 font-medium">Refreshed {{ $account->updated_at->diffForHumans() }}</span>
-                <div class="flex gap-4">
+                <div class="flex flex-wrap gap-2.5 sm:gap-4">
                     <a href="{{ route('accounts.reconcile', $account) }}" class="text-[10px] font-black text-slate-400 hover:text-emerald-400 transition-colors uppercase tracking-widest">Penyesuaian</a>
                     <a href="{{ route('transactions.index', ['account_id' => $account->id]) }}" class="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">Transactions</a>
                     <a href="{{ route('accounts.edit', $account) }}" class="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">Settings</a>

@@ -5,7 +5,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto space-y-8">
 
-    {{-- ── Header ──────────────────────────────────────────────────────────── --}}
+    {{-- â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
     <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Wealth Statement</h2>
@@ -21,27 +21,28 @@
     </header>
 
     {{-- ── Hero: Net Worth ─────────────────────────────────────────────────── --}}
-    <div class="relative overflow-hidden bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+    <div class="relative overflow-hidden bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-8 shadow-sm">
         <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div class="space-y-2">
                 <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Total Net Worth</p>
-                <h2 class="text-5xl font-black tracking-tight text-slate-900 dark:text-white">
-                    Rp {{ number_format($netWorth, 0, ',', '.') }}
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis flex items-baseline gap-1 sm:gap-2">
+                    <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-400 dark:text-slate-500">Rp</span>
+                    <span>{{ number_format($netWorth, 0, ',', '.') }}</span>
                 </h2>
                 <div class="flex items-center gap-2 {{ $netWorth >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
                     <span class="material-symbols-outlined text-sm">{{ $netWorth >= 0 ? 'trending_up' : 'trending_down' }}</span>
-                    <span class="text-sm font-semibold">{{ $netWorth >= 0 ? 'Positive' : 'Negative' }} net worth position</span>
+                    <span class="text-xs sm:text-sm font-semibold">{{ $netWorth >= 0 ? 'Positive' : 'Negative' }} net worth position</span>
                 </div>
             </div>
-            <div class="flex gap-6 flex-wrap">
-                <div class="text-right">
+            <div class="flex items-center gap-4 sm:gap-6 flex-wrap pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+                <div class="text-left md:text-right">
                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Total Assets</p>
-                    <p class="text-2xl font-bold text-emerald-500">Rp {{ number_format($totalAssets, 0, ',', '.') }}</p>
+                    <p class="text-xl sm:text-2xl font-bold text-emerald-500 whitespace-nowrap">Rp&nbsp;{{ number_format($totalAssets, 0, ',', '.') }}</p>
                 </div>
-                <div class="w-px h-12 bg-slate-200 dark:bg-slate-700 self-center"></div>
-                <div class="text-right">
+                <div class="w-px h-10 bg-slate-200 dark:bg-slate-700"></div>
+                <div class="text-left md:text-right">
                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Total Liabilities</p>
-                    <p class="text-2xl font-bold text-rose-500">(Rp {{ number_format($totalLiabilities, 0, ',', '.') }})</p>
+                    <p class="text-xl sm:text-2xl font-bold text-rose-500 whitespace-nowrap">(Rp&nbsp;{{ number_format($totalLiabilities, 0, ',', '.') }})</p>
                 </div>
             </div>
         </div>
@@ -66,7 +67,7 @@
                     <span class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded-full">Liquid</span>
                 </div>
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Cash & Bank</p>
-                <p class="text-2xl font-bold dark:text-white mt-1">Rp {{ number_format($totalCash, 0, ',', '.') }}</p>
+                <p class="text-xl sm:text-2xl font-bold dark:text-white mt-1 whitespace-nowrap">Rp {{ number_format($totalCash, 0, ',', '.') }}</p>
                 <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-500 flex justify-between">
                     <span>{{ $accounts->count() }} accounts</span>
                     <span class="text-blue-400 font-semibold">{{ $totalAssets > 0 ? number_format(($totalCash / $totalAssets) * 100, 1) : 0 }}% of assets</span>
@@ -84,7 +85,7 @@
                     </span>
                 </div>
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Investments</p>
-                <p class="text-2xl font-bold dark:text-white mt-1">Rp {{ number_format($totalInvestments, 0, ',', '.') }}</p>
+                <p class="text-xl sm:text-2xl font-bold dark:text-white mt-1 whitespace-nowrap">Rp {{ number_format($totalInvestments, 0, ',', '.') }}</p>
                 <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-500 flex justify-between">
                     <span>{{ $investments->count() }} positions</span>
                     <span class="text-primary font-semibold">{{ $totalAssets > 0 ? number_format(($totalInvestments / $totalAssets) * 100, 1) : 0 }}% of assets</span>
@@ -99,7 +100,7 @@
                     </div>
                 </div>
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Receivables</p>
-                <p class="text-2xl font-bold dark:text-white mt-1">Rp {{ number_format($totalReceivables, 0, ',', '.') }}</p>
+                <p class="text-xl sm:text-2xl font-bold dark:text-white mt-1 whitespace-nowrap">Rp {{ number_format($totalReceivables, 0, ',', '.') }}</p>
                 <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-500 flex justify-between">
                     <span>{{ $receivables->count() }} outstanding</span>
                     <span class="text-orange-400 font-semibold">{{ $totalAssets > 0 ? number_format(($totalReceivables / $totalAssets) * 100, 1) : 0 }}% of assets</span>
@@ -114,7 +115,7 @@
                     </div>
                 </div>
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Fixed Assets</p>
-                <p class="text-2xl font-bold dark:text-white mt-1">Rp {{ number_format($totalFixedAssets, 0, ',', '.') }}</p>
+                <p class="text-xl sm:text-2xl font-bold dark:text-white mt-1 whitespace-nowrap">Rp {{ number_format($totalFixedAssets, 0, ',', '.') }}</p>
                 <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-500 flex justify-between">
                     <span>{{ $appreciatingAssets->count() }} items</span>
                     <span class="text-purple-400 font-semibold">{{ $totalAssets > 0 ? number_format(($totalFixedAssets / $totalAssets) * 100, 1) : 0 }}% of assets</span>
@@ -138,7 +139,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Debts</p>
-                    <p class="text-3xl font-bold text-rose-500 truncate">Rp {{ number_format($totalDebts, 0, ',', '.') }}</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-rose-500 truncate whitespace-nowrap">Rp {{ number_format($totalDebts, 0, ',', '.') }}</p>
                     <p class="text-xs text-slate-500 mt-1">{{ $debts->count() }} active obligations</p>
                 </div>
                 <span class="text-xs font-bold text-rose-500 px-3 py-1 bg-rose-500/10 rounded-full whitespace-nowrap">Liability</span>
@@ -151,7 +152,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Depreciating Value</p>
-                    <p class="text-3xl font-bold text-slate-400 truncate">Rp {{ number_format($totalDepreciating, 0, ',', '.') }}</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-slate-400 truncate whitespace-nowrap">Rp {{ number_format($totalDepreciating, 0, ',', '.') }}</p>
                     <p class="text-xs text-slate-500 mt-1">{{ $depreciatingAssets->count() }} items losing value</p>
                 </div>
                 <span class="text-xs font-bold text-slate-500 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full whitespace-nowrap">Depreciating</span>
@@ -167,8 +168,8 @@
         </div>
 
         <div class="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto w-full overscroll-x-contain" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-left border-collapse min-w-[640px]">
                     <thead>
                         <tr class="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
                             <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Item</th>

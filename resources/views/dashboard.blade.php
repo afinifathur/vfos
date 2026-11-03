@@ -4,22 +4,22 @@
 
 @section('content')
 <!-- Row 1: KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
     <!-- Net Worth -->
-    <div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Net Worth</p>
-            <span class="material-symbols-outlined text-primary">account_balance</span>
+    <div class="bg-white dark:bg-card-dark p-3.5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2 sm:mb-4">
+            <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Net Worth</p>
+            <span class="material-symbols-outlined text-primary text-lg sm:text-2xl">account_balance</span>
         </div>
         <div class="flex items-end justify-between">
-            <div>
-                <h3 class="text-2xl font-bold dark:text-white">Rp {{ number_format($netWorth, 0, ',', '.') }}</h3>
-                <p class="text-xs font-semibold text-emerald-500 flex items-center mt-1">
-                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
-                    Calculated <span class="text-slate-400 font-normal ml-1">from all time transactions</span>
+            <div class="min-w-0 flex-1">
+                <h3 class="text-base sm:text-2xl font-bold dark:text-white truncate">Rp {{ number_format($netWorth, 0, ',', '.') }}</h3>
+                <p class="text-[10px] sm:text-xs font-semibold text-emerald-500 flex items-center mt-1 truncate">
+                    <span class="material-symbols-outlined text-xs mr-0.5">trending_up</span>
+                    Calculated <span class="text-slate-400 font-normal ml-1 hidden sm:inline">from all time transactions</span>
                 </p>
             </div>
-            <div class="w-16 h-8">
+            <div class="hidden sm:block w-16 h-8 flex-shrink-0">
                 <svg class="w-full h-full text-emerald-500 stroke-current fill-none" stroke-width="2" viewbox="0 0 100 40">
                     <path d="M0 35 L10 32 L25 38 L40 25 L60 28 L80 10 L100 5" stroke-linecap="round"></path>
                 </svg>
@@ -27,37 +27,37 @@
         </div>
     </div>
     <!-- Income -->
-    <div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Income</p>
-            <span class="material-symbols-outlined text-emerald-500">arrow_downward</span>
+    <div class="bg-white dark:bg-card-dark p-3.5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2 sm:mb-4">
+            <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Income</p>
+            <span class="material-symbols-outlined text-emerald-500 text-lg sm:text-2xl">arrow_downward</span>
         </div>
         <div>
-            <h3 class="text-2xl font-bold dark:text-white">Rp {{ number_format($monthlyIncome, 0, ',', '.') }}</h3>
-            <p class="text-xs text-slate-400 mt-1">This month so far</p>
+            <h3 class="text-base sm:text-2xl font-bold dark:text-white truncate">Rp {{ number_format($monthlyIncome, 0, ',', '.') }}</h3>
+            <p class="text-[10px] sm:text-xs text-slate-400 mt-1 truncate">This month so far</p>
         </div>
     </div>
     <!-- Expense -->
-    <div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Expense</p>
-            <span class="material-symbols-outlined text-rose-500">arrow_upward</span>
+    <div class="bg-white dark:bg-card-dark p-3.5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2 sm:mb-4">
+            <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Expense</p>
+            <span class="material-symbols-outlined text-rose-500 text-lg sm:text-2xl">arrow_upward</span>
         </div>
         <div>
-            <h3 class="text-2xl font-bold dark:text-white">Rp {{ number_format($monthlyExpense, 0, ',', '.') }}</h3>
-            <p class="text-xs text-slate-400 mt-1">Remaining: Rp {{ number_format($monthlyIncome - $monthlyExpense, 0, ',', '.') }}</p>
+            <h3 class="text-base sm:text-2xl font-bold dark:text-white truncate">Rp {{ number_format($monthlyExpense, 0, ',', '.') }}</h3>
+            <p class="text-[10px] sm:text-xs text-slate-400 mt-1 truncate">Remaining: Rp {{ number_format($monthlyIncome - $monthlyExpense, 0, ',', '.') }}</p>
         </div>
     </div>
     <!-- Saving Rate -->
-    <div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Saving Rate</p>
-            <span class="material-symbols-outlined text-orange-400">savings</span>
+    <div class="bg-white dark:bg-card-dark p-3.5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2 sm:mb-4">
+            <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Saving Rate</p>
+            <span class="material-symbols-outlined text-orange-400 text-lg sm:text-2xl">savings</span>
         </div>
         <div>
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-2xl font-bold dark:text-white">{{ round($savingRate) }}%</h3>
-                <span class="text-[10px] font-bold text-primary px-1.5 py-0.5 bg-primary/10 rounded">GOAL: 50%</span>
+            <div class="flex items-center justify-between mb-1.5 sm:mb-2">
+                <h3 class="text-base sm:text-2xl font-bold dark:text-white">{{ round($savingRate) }}%</h3>
+                <span class="text-[9px] sm:text-[10px] font-bold text-primary px-1 sm:px-1.5 py-0.5 bg-primary/10 rounded">GOAL: 50%</span>
             </div>
             <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                 <div class="bg-primary h-full rounded-full" style="width: {{ min(100, $savingRate) }}%"></div>
@@ -71,7 +71,7 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h3 class="text-base font-bold dark:text-white">Monthly Cashflow Trend</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Income, expense & net savings — last 12 months</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Income, expense & net savings â€” last 12 months</p>
         </div>
         <div class="flex items-center gap-4 text-xs font-semibold">
             <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-emerald-500/80"></span> Income</span>
@@ -118,7 +118,7 @@
                 <div class="flex flex-col items-center gap-2 py-4 text-center">
                     <span class="material-symbols-outlined text-3xl text-slate-300 dark:text-slate-700">pie_chart</span>
                     <p class="text-sm text-slate-500">No spending or budget set this month.</p>
-                    <a href="{{ route('budgets.index') }}" class="text-xs font-semibold text-primary hover:underline">Set a budget →</a>
+                    <a href="{{ route('budgets.index') }}" class="text-xs font-semibold text-primary hover:underline">Set a budget â†’</a>
                 </div>
             @endforelse
         </div>
@@ -155,7 +155,7 @@
                                     @php
                                         $txLabel = $transaction->transactionItems->first()?->description
                                                 ?: ($transaction->notes ?: 'Transaction');
-                                        $txLabel = \Illuminate\Support\Str::limit($txLabel, 50, '…');
+                                        $txLabel = \Illuminate\Support\Str::limit($txLabel, 50, 'â€¦');
                                     @endphp
                                     <span class="text-sm font-medium dark:text-white">{{ $txLabel }}</span>
                                 </div>

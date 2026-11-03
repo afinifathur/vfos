@@ -82,7 +82,22 @@ class TransactionController extends Controller
     {
         $accounts  = Account::where('is_active', true)->get();
         $categories = Category::where('is_active', true)->with('subcategories')->get();
-        return view('transactions.create', compact('accounts', 'categories'));
+
+        // Safely resolve default Cash account:
+        // 1. Look for active account with type === 'cash'
+        $defaultCashAccount = $accounts->firstWhere('type', 'cash');
+
+        // 2. Fallback: search by name matching 'cash' or 'tunai' or 'dompet'
+        if (!$defaultCashAccount) {
+            $defaultCashAccount = $accounts->first(function ($account) {
+                $name = strtolower($account->name);
+                return str_contains($name, 'cash') || str_contains($name, 'tunai') || str_contains($name, 'dompet');
+            });
+        }
+
+        $defaultAccountId = $defaultCashAccount?->id;
+
+        return view('transactions.create', compact('accounts', 'categories', 'defaultAccountId'));
     }
 
     public function store(Request $request)
@@ -99,8 +114,26 @@ class TransactionController extends Controller
             'items.*.amount'           => 'required|numeric|min:0',
         ]);
 
-        // Ensure account is accessible
+        // Ensure account is accessible and belongs to user
         Account::findOrFail($validated['account_id']);
+        if (!empty($validated['to_account_id'])) {
+            Account::findOrFail($validated['to_account_id']);
+        }
+
+        // Validate items: ensure category belongs to user and subcategory matches category
+        foreach ($validated['items'] as $index => $item) {
+            $cat = Category::findOrFail($item['category_id']);
+            if (!empty($item['subcategory_id'])) {
+                $subExists = Subcategory::where('id', $item['subcategory_id'])
+                    ->where('category_id', $cat->id)
+                    ->exists();
+                if (!$subExists) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "items.{$index}.subcategory_id" => ['Subcategory does not belong to the selected category.']
+                    ]);
+                }
+            }
+        }
 
         $headerData = [
             'account_id'       => $validated['account_id'],
@@ -111,6 +144,17 @@ class TransactionController extends Controller
         ];
 
         $this->kernelService->recordTransaction($headerData, $validated['items']);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction recorded successfully.',
+                'data'    => [
+                    'amount' => (float) ($validated['items'][0]['amount'] ?? 0),
+                    'type'   => $validated['type'],
+                ],
+            ]);
+        }
 
         return redirect()->route('transactions.index')->with('success', 'Transaction recorded successfully.');
     }

@@ -32,33 +32,36 @@
 @endphp
 <div class="max-w-7xl mx-auto">
     <!-- Action Header (Month & Create) -->
-    <div class="flex items-center justify-between mb-8 bg-card-dark p-4 rounded-xl border border-slate-800 shadow-sm">
-        <form method="GET" action="{{ route('budgets.index') }}" class="flex items-center bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700 focus-within:ring-1 focus-within:ring-primary/50 transition-shadow">
-            <span class="material-symbols-outlined text-slate-400 text-sm mr-2 select-none">calendar_month</span>
-            <select name="month" onchange="this.form.submit()" class="bg-transparent border-none text-sm font-medium text-slate-200 focus:ring-0 p-0 cursor-pointer mr-2 outline-none">
-                @foreach($availablePeriods as $period)
-                    <option class="bg-card-dark text-slate-200" value="{{ $period->month }}" {{ $period->month == $month && $period->year == $year ? 'selected' : '' }}>
-                        {{ $period->label }}
-                    </option>
-                @endforeach
-            </select>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8 bg-card-dark p-3.5 sm:p-4 rounded-xl border border-slate-800 shadow-sm">
+        <form method="GET" action="{{ route('budgets.index') }}" class="flex items-center justify-between sm:justify-start bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700 focus-within:ring-1 focus-within:ring-primary/50 transition-shadow w-full sm:w-auto">
+            <div class="flex items-center">
+                <span class="material-symbols-outlined text-slate-400 text-sm mr-2 select-none">calendar_month</span>
+                <select name="month" onchange="this.form.submit()" class="bg-transparent border-none text-sm font-medium text-slate-200 focus:ring-0 p-0 cursor-pointer mr-2 outline-none">
+                    @foreach($availablePeriods as $period)
+                        <option class="bg-card-dark text-slate-200" value="{{ $period->month }}" {{ $period->month == $month && $period->year == $year ? 'selected' : '' }}>
+                            {{ $period->label }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <span class="material-symbols-outlined text-slate-400 text-sm sm:hidden pointer-events-none">expand_more</span>
             <input type="hidden" name="year" value="{{ $year }}">
         </form>
-        <a href="{{ route('budgets.create') }}" class="bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+        <a href="{{ route('budgets.create') }}" class="w-full sm:w-auto justify-center bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
             <span class="material-symbols-outlined text-[20px]">add</span>
             Create Budget
         </a>
     </div>
 
     <!-- Summary Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div class="bg-card-dark border border-slate-800 p-6 rounded-xl flex flex-col gap-1 shadow-sm relative overflow-hidden">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-10">
+        <div class="bg-card-dark border border-slate-800 p-4 sm:p-6 rounded-xl flex flex-col gap-1 shadow-sm relative overflow-hidden">
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
-            <p class="text-slate-400 text-sm font-medium relative z-10">Total Budgeted</p>
+            <p class="text-slate-400 text-xs sm:text-sm font-medium relative z-10">Total Budgeted</p>
             <div class="flex items-baseline gap-2 relative z-10">
-                <h3 class="text-3xl font-bold text-white">Rp {{ number_format($totalBudgeted, 0, ',', '.') }}</h3>
+                <h3 class="text-2xl sm:text-3xl font-bold text-white whitespace-nowrap">Rp {{ number_format($totalBudgeted, 0, ',', '.') }}</h3>
             </div>
-            <p class="text-slate-500 text-xs font-medium mt-2 flex items-center gap-1 relative z-10">
+            <p class="text-slate-500 text-[11px] sm:text-xs font-medium mt-1 sm:mt-2 flex items-center gap-1 relative z-10">
                 <span class="material-symbols-outlined text-[14px]">account_balance_wallet</span>
                 For selected month
             </p>
@@ -70,13 +73,13 @@
             $spentColor = $totalPercentage > 90 ? 'danger' : ($totalPercentage > 75 ? 'warning' : 'success');
         @endphp
 
-        <div class="bg-card-dark border border-slate-800 p-6 rounded-xl flex flex-col gap-1 shadow-sm relative overflow-hidden">
+        <div class="bg-card-dark border border-slate-800 p-4 sm:p-6 rounded-xl flex flex-col gap-1 shadow-sm relative overflow-hidden">
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-{{ $spentColor }}/5 rounded-full blur-2xl"></div>
-            <p class="text-slate-400 text-sm font-medium relative z-10">Total Spent</p>
+            <p class="text-slate-400 text-xs sm:text-sm font-medium relative z-10">Total Spent</p>
             <div class="flex items-baseline gap-2 relative z-10">
-                <h3 class="text-3xl font-bold text-white">Rp {{ number_format($totalSpent, 0, ',', '.') }}</h3>
+                <h3 class="text-2xl sm:text-3xl font-bold text-white whitespace-nowrap">Rp {{ number_format($totalSpent, 0, ',', '.') }}</h3>
             </div>
-            <p class="text-{{ $spentColor }} text-xs font-medium mt-2 flex items-center gap-1 relative z-10">
+            <p class="text-{{ $spentColor }} text-[11px] sm:text-xs font-medium mt-1 sm:mt-2 flex items-center gap-1 relative z-10">
                 @if($totalPercentage > 90)
                     <span class="material-symbols-outlined text-[14px]">trending_up</span>
                 @else
@@ -89,13 +92,13 @@
         @php
             $remColor = $remainingBudget < 0 ? 'danger' : 'slate-400';
         @endphp
-        <div class="bg-card-dark border border-slate-800 p-6 rounded-xl flex flex-col gap-1 shadow-sm relative overflow-hidden">
+        <div class="bg-card-dark border border-slate-800 p-4 sm:p-6 rounded-xl flex flex-col gap-1 shadow-sm relative overflow-hidden">
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-{{ $remainingBudget < 0 ? 'danger' : 'success' }}/5 rounded-full blur-2xl"></div>
-            <p class="text-slate-400 text-sm font-medium relative z-10">Remaining Budget</p>
+            <p class="text-slate-400 text-xs sm:text-sm font-medium relative z-10">Remaining Budget</p>
             <div class="flex items-baseline gap-2 relative z-10">
-                <h3 class="text-3xl font-bold text-white">Rp {{ number_format($remainingBudget, 0, ',', '.') }}</h3>
+                <h3 class="text-2xl sm:text-3xl font-bold text-white whitespace-nowrap">Rp {{ number_format($remainingBudget, 0, ',', '.') }}</h3>
             </div>
-            <p class="text-{{ $remColor }} text-xs font-medium mt-2 flex items-center gap-1 relative z-10">
+            <p class="text-{{ $remColor }} text-[11px] sm:text-xs font-medium mt-1 sm:mt-2 flex items-center gap-1 relative z-10">
                 @if($remainingBudget < 0)
                     <span class="material-symbols-outlined text-[14px]">warning</span>
                     Over budget by Rp {{ number_format(abs($remainingBudget), 0, ',', '.') }}
