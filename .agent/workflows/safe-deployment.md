@@ -60,17 +60,17 @@ sudo docker compose build app
 sudo docker compose up -d app
 
 # Clear semua cache Laravel
-sudo docker compose exec app php artisan config:clear
-sudo docker compose exec app php artisan view:clear
-sudo docker compose exec app php artisan route:clear
-sudo docker compose exec app php artisan cache:clear
+docker compose exec app php artisan config:clear
+docker compose exec app php artisan view:clear
+docker compose exec app php artisan route:clear
+docker compose exec app php artisan cache:clear
 
 # HANYA JIKA ADA MIGRATION BARU (BUKAN migrate:fresh!)
 sudo docker compose exec app php artisan migrate --force
 
 # Re-cache untuk production
-sudo docker compose exec app php artisan config:cache
-sudo docker compose exec app php artisan route:cache
+docker compose exec app php artisan config:cache
+docker compose exec app php artisan route:cache
 ```
 
 #### STEP 4: Verifikasi

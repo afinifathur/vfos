@@ -64,7 +64,7 @@
     @endif
 
     <!-- Mobile Quick Add Form -->
-    <form id="mobile_quick_add_form" method="POST" action="{{ route('transactions.store') }}" class="space-y-4">
+    <form id="mobile_quick_add_form" method="POST" action="{{ route('transactions.store') }}" novalidate class="space-y-4">
         @csrf
         
         <!-- 1. Transaction Type Selector (Segmented Toggle) -->
@@ -102,7 +102,6 @@
                 <input type="text" 
                        id="mobile_amount_display" 
                        inputmode="numeric" 
-                       pattern="[0-9]*"
                        placeholder="0" 
                        autocomplete="off"
                        class="w-full bg-transparent border-none p-0 text-3xl font-black text-white placeholder:text-slate-600 focus:ring-0 outline-none leading-none tracking-tight">
@@ -586,6 +585,14 @@
             mobileAmountRaw.value = num;
             this.value = new Intl.NumberFormat('id-ID').format(num);
         });
+    }
+
+    // Initialize display value from old/preset raw value if present
+    if (mobileAmountRaw && mobileAmountRaw.value) {
+        const initVal = parseFloat(mobileAmountRaw.value);
+        if (!isNaN(initVal) && initVal > 0) {
+            setMobileAmount(initVal);
+        }
     }
 
     window.addMobilePreset = function(addVal) {

@@ -399,5 +399,83 @@ class MobileQuickAddTransactionTest extends TestCase
         // HasOwner global scope causes Category::findOrFail to fail with 404
         $response->assertStatus(404);
     }
+
+    /**
+     * 13. Test that Mobile Quick Add HTML attributes avoid Safari pattern mismatch.
+     * Checks inputmode="numeric", no pattern="[0-9]*", and novalidate on form.
+     */
+    public function test_mobile_quick_add_html_attributes_avoid_safari_pattern_mismatch(): void
+    {
+        $response = $this->get(route('transactions.create'));
+
+        $response->assertStatus(200);
+        $content = $response->getContent();
+
+        // Ensure mobile_amount_display uses inputmode="numeric"
+        $this->assertStringContainsString('id="mobile_amount_display"', $content);
+        $this->assertStringContainsString('inputmode="numeric"', $content);
+
+        // Ensure conflicting pattern="[0-9]*" is NOT present on mobile_amount_display
+        $this->assertStringNotContainsString('pattern="[0-9]*"', $content);
+        $this->assertStringNotContainsString('pattern=', $content);
+
+        // Ensure form uses novalidate to prevent native constraint validation bubble
+        $this->assertStringContainsString('<form id="mobile_quick_add_form"', $content);
+        $this->assertStringContainsString('novalidate', $content);
+    }
+
+    /**
+     * 14. Test quick add with various nominal amounts (7.000, 15.000, 1.500.000).
+     */
+    public function test_quick_add_various_nominal_amounts(): void
+    {
+        $amounts = [7000.00, 15000.00, 1500000.00];
+
+        foreach ($amounts as $amount) {
+            $response = $this->postJson(route('transactions.store'), [
+                'account_id'       => $this->cashAccount->id,
+                'type'             => 'expense',
+                'transaction_date' => now()->toDateString(),
+                'items'            => [
+                    [
+                        'category_id' => $this->transportCategory->id,
+                        'amount'      => $amount,
+                        'description' => "Test amount {$amount}",
+                    ]
+                ]
+            ]);
+
+            $response->assertStatus(200);
+            $response->assertJson([
+                'success' => true,
+                'data'    => [
+                    'amount' => $amount,
+                    'type'   => 'expense',
+                ]
+            ]);
+        }
+    }
+
+    /**
+     * 15. Test validation fails when amount is empty or non-numeric.
+     */
+    public function test_validation_fails_on_empty_amount(): void
+    {
+        $response = $this->postJson(route('transactions.store'), [
+            'account_id'       => $this->cashAccount->id,
+            'type'             => 'expense',
+            'transaction_date' => now()->toDateString(),
+            'items'            => [
+                [
+                    'category_id' => $this->transportCategory->id,
+                    'amount'      => '',
+                    'description' => 'Empty amount',
+                ]
+            ]
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['items.0.amount']);
+    }
 }
 
