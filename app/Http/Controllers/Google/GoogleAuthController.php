@@ -97,6 +97,18 @@ class GoogleAuthController extends Controller
                 userId: Auth::id()
             );
 
+            if (!$credential->hasRefreshToken()) {
+                Log::warning('Google account connected without refresh token', [
+                    'user_id'      => Auth::id(),
+                    'provider'     => $credential->provider,
+                    'google_email' => $credential->google_email,
+                ]);
+
+                return redirect()
+                    ->to(route('settings.index') . '#google')
+                    ->with('warning', "Google account ({$credential->google_email}) connected, but offline access (refresh token) was not granted by Google. Please disconnect and re-authenticate, ensuring you grant offline access.");
+            }
+
             Log::info('Google account connected', [
                 'user_id'      => Auth::id(),
                 'provider'     => $credential->provider,

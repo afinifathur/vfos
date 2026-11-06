@@ -70,7 +70,7 @@ class GoogleCredential extends Model
 
         $buffer = config('google.refresh_buffer_seconds', 300);
 
-        return $this->expires_at->subSeconds($buffer)->isPast();
+        return $this->expires_at->copy()->subSeconds($buffer)->isPast();
     }
 
     /**

@@ -49,7 +49,8 @@ class GoogleClientFactory
         $client = new Client();
         $client->setClientId($clientId);
         $client->setClientSecret($clientSecret);
-        $client->setRedirectUri(config('google.redirect_uri', 'http://vfos.test/auth/google/callback'));
+        $redirectUri = config('google.redirect_uri');
+        $client->setRedirectUri(!empty($redirectUri) ? $redirectUri : 'http://vfos.test/auth/google/callback');
 
         // 'offline' access type is required to receive a refresh token.
         $client->setAccessType('offline');

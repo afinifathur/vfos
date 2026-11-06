@@ -42,20 +42,45 @@ class GoogleCredentialRepository
      */
     public function upsert(array $data): GoogleCredential
     {
-        $updates = array_merge(
-            array_filter($data, fn($v) => $v !== null),
-            [
-                'is_active'         => true,
-                'last_connected_at' => now(),
-            ]
-        );
+        $existing = $this->findByUserAndProvider($data['user_id'], $data['provider']);
+
+        $newRefreshToken = $data['refresh_token'] ?? null;
+        $googleEmail     = $data['google_email'] ?? $existing?->google_email;
+
+        // If the Google email changed, do not carry over a different account's refresh token
+        $emailChanged = $existing
+            && !empty($data['google_email'])
+            && !empty($existing->google_email)
+            && strtolower($existing->google_email) !== strtolower($data['google_email']);
+
+        // Preserve existing valid refresh token if Google omitted it during re-authorization
+        if (empty($newRefreshToken) && $existing && !$emailChanged && $existing->hasRefreshToken()) {
+            $effectiveRefreshToken = $existing->refresh_token;
+        } else {
+            $effectiveRefreshToken = $newRefreshToken;
+        }
+
+        // Connection is active only if a usable refresh token exists (required for offline access)
+        $isActive = array_key_exists('is_active', $data)
+            ? (bool) $data['is_active']
+            : !empty($effectiveRefreshToken);
+
+        $payload = [
+            'access_token'      => $data['access_token'] ?? $existing?->access_token,
+            'refresh_token'     => $effectiveRefreshToken,
+            'expires_at'        => $data['expires_at'] ?? $existing?->expires_at,
+            'google_email'      => $googleEmail,
+            'scopes'            => $data['scopes'] ?? $existing?->scopes,
+            'is_active'         => $isActive,
+            'last_connected_at' => now(),
+        ];
 
         $credential = GoogleCredential::updateOrCreate(
             [
                 'user_id'  => $data['user_id'],
                 'provider' => $data['provider'],
             ],
-            $updates
+            $payload
         );
 
         return $credential->fresh();

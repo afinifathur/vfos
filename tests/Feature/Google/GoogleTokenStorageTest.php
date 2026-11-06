@@ -141,4 +141,93 @@ class GoogleTokenStorageTest extends TestCase
         $this->assertNull($credential->refresh_token);
         $this->assertNull($credential->access_token);
     }
+
+    public function test_existing_refresh_token_survives_callback_without_refresh_token(): void
+    {
+        $user = User::factory()->create();
+
+        // 1. Initial connection with valid refresh token
+        $this->tokenService->storeTokens($user->id, 'gmail', [
+            'access_token'  => 'ya29.initial-access',
+            'refresh_token' => '1//existing-valid-refresh-token',
+            'expires_in'    => 3600,
+        ], 'afin@gmail.com');
+
+        $initialCred = GoogleCredential::where('user_id', $user->id)->first();
+        $this->assertEquals('1//existing-valid-refresh-token', $initialCred->refresh_token);
+        $this->assertTrue($initialCred->is_active);
+
+        // 2. Re-authorization where Google omits refresh_token
+        $reconnectedCred = $this->tokenService->storeTokens($user->id, 'gmail', [
+            'access_token' => 'ya29.new-access-token',
+            'expires_in'   => 3600,
+            // refresh_token omitted
+        ], 'afin@gmail.com');
+
+        $this->assertEquals('1//existing-valid-refresh-token', $reconnectedCred->refresh_token);
+        $this->assertEquals('ya29.new-access-token', $reconnectedCred->access_token);
+        $this->assertTrue($reconnectedCred->is_active);
+        $this->assertTrue($reconnectedCred->hasRefreshToken());
+    }
+
+    public function test_new_refresh_token_replaces_old_token(): void
+    {
+        $user = User::factory()->create();
+
+        // 1. Initial
+        $this->tokenService->storeTokens($user->id, 'gmail', [
+            'access_token'  => 'ya29.old-access',
+            'refresh_token' => '1//old-refresh-token',
+            'expires_in'    => 3600,
+        ], 'afin@gmail.com');
+
+        // 2. Re-authorization with brand new refresh token
+        $updatedCred = $this->tokenService->storeTokens($user->id, 'gmail', [
+            'access_token'  => 'ya29.new-access',
+            'refresh_token' => '1//new-brand-refresh-token',
+            'expires_in'    => 3600,
+        ], 'afin@gmail.com');
+
+        $this->assertEquals('1//new-brand-refresh-token', $updatedCred->refresh_token);
+        $this->assertEquals('ya29.new-access', $updatedCred->access_token);
+        $this->assertTrue($updatedCred->is_active);
+    }
+
+    public function test_first_authorization_without_refresh_token_is_handled_safely(): void
+    {
+        $user = User::factory()->create();
+
+        // First-time authorization where Google omits refresh_token
+        $cred = $this->tokenService->storeTokens($user->id, 'gmail', [
+            'access_token' => 'ya29.first-no-refresh',
+            'expires_in'   => 3600,
+        ], 'afin@gmail.com');
+
+        $this->assertNull($cred->refresh_token);
+        $this->assertFalse($cred->is_active, 'Connection must not be active without a usable refresh token');
+        $this->assertFalse($cred->hasRefreshToken());
+        $this->assertEquals('Disconnected', $cred->statusLabel());
+    }
+
+    public function test_account_email_change_does_not_inherit_previous_user_refresh_token(): void
+    {
+        $user = User::factory()->create();
+
+        // Initial connection with userA@gmail.com
+        $this->tokenService->storeTokens($user->id, 'gmail', [
+            'access_token'  => 'ya29.userA-access',
+            'refresh_token' => '1//userA-refresh-token',
+            'expires_in'    => 3600,
+        ], 'userA@gmail.com');
+
+        // Reconnect with userB@gmail.com where Google omits refresh_token
+        $credB = $this->tokenService->storeTokens($user->id, 'gmail', [
+            'access_token' => 'ya29.userB-access',
+            'expires_in'   => 3600,
+        ], 'userB@gmail.com');
+
+        $this->assertEquals('userB@gmail.com', $credB->google_email);
+        $this->assertNull($credB->refresh_token, 'Must not carry over userA refresh token to userB');
+        $this->assertFalse($credB->is_active);
+    }
 }

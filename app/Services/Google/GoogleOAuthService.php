@@ -75,19 +75,19 @@ class GoogleOAuthService
         string $state,
         int $userId
     ): GoogleCredential {
-        // CSRF validation
+        // Retrieve and immediately consume CSRF state and provider from session
         $expectedState = session('google_oauth_state');
+        $provider      = session('google_oauth_provider', 'gmail');
+
+        session()->forget(['google_oauth_state', 'google_oauth_provider']);
+
+        // CSRF validation
         if (!$expectedState || !hash_equals($expectedState, $state)) {
             throw new GoogleApiException(
-                'OAuth state mismatch. The request may have been tampered with.',
+                'OAuth state mismatch or session expired. Please ensure browser cookies are enabled and initiate the connection again.',
                 GoogleApiException::STATE_MISMATCH
             );
         }
-
-        $provider = session('google_oauth_provider', 'gmail');
-
-        // Clean up CSRF state from session
-        session()->forget(['google_oauth_state', 'google_oauth_provider']);
 
         $client = $this->factory->make($provider);
 
@@ -137,9 +137,36 @@ class GoogleOAuthService
         }
 
         $client = $this->factory->make($credential->provider);
-        $client->refreshToken($credential->refresh_token);
+        $newTokenData = null;
 
-        $newTokenData = $client->getAccessToken();
+        try {
+            $client->refreshToken($credential->refresh_token);
+            $newTokenData = $client->getAccessToken();
+        } catch (\Throwable $e) {
+            if ($this->isInvalidGrant(null, $e)) {
+                $this->handleInvalidGrant($credential, $e->getMessage());
+            }
+
+            throw new GoogleApiException(
+                'Token refresh request failed with Google: ' . $e->getMessage(),
+                GoogleApiException::REFRESH_FAILED,
+                $e
+            );
+        }
+
+        if (is_array($newTokenData) && isset($newTokenData['error'])) {
+            $error     = (string) $newTokenData['error'];
+            $errorDesc = $newTokenData['error_description'] ?? $error;
+
+            if ($this->isInvalidGrant($newTokenData)) {
+                $this->handleInvalidGrant($credential, (string) $errorDesc);
+            }
+
+            throw new GoogleApiException(
+                "Token refresh failed [{$error}]: {$errorDesc}. Re-authorization is required.",
+                GoogleApiException::REFRESH_FAILED
+            );
+        }
 
         if (empty($newTokenData['access_token'])) {
             throw new GoogleApiException(
@@ -165,6 +192,45 @@ class GoogleOAuthService
     }
 
     // ─── Private Helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Determine specifically whether the failure was caused by Google's invalid_grant.
+     */
+    private function isInvalidGrant(?array $tokenData, ?\Throwable $e = null): bool
+    {
+        if (is_array($tokenData)) {
+            $error = strtolower((string) ($tokenData['error'] ?? ''));
+            $desc  = strtolower((string) ($tokenData['error_description'] ?? ''));
+            if ($error === 'invalid_grant' || str_contains($error, 'invalid_grant') || str_contains($desc, 'invalid_grant')) {
+                return true;
+            }
+        }
+
+        if ($e !== null) {
+            $msg = strtolower($e->getMessage());
+            if (str_contains($msg, 'invalid_grant')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Deactivate the credential when the refresh token is definitively rejected by Google.
+     * Scoped strictly to this user's credential.
+     */
+    private function handleInvalidGrant(GoogleCredential $credential, string $reason): void
+    {
+        \Illuminate\Support\Facades\Log::warning('Google refresh token rejected with invalid_grant. Deactivating credential.', [
+            'user_id'      => $credential->user_id,
+            'provider'     => $credential->provider,
+            'google_email' => $credential->google_email,
+            'reason'       => $reason,
+        ]);
+
+        $this->credentialRepo->deactivate($credential->user_id, $credential->provider);
+    }
 
     /**
      * Fetch the Google account email using the OAuth2 userinfo endpoint.

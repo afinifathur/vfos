@@ -54,10 +54,10 @@ sudo git pull origin main
 # KHUSUS VFOS SERVER: WAJIB RE-BUILD DOCKER
 # Karena arsitekturnya mengkopi folder saat docker build (lihat Dockerfile: COPY . /var/www),
 # maka perintah `docker compose build` MUTLAK DIPERLUKAN supaya kode baru ter-update di image.
-sudo docker compose build app
+docker compose build app
 
 # Restart container app dengan image yang baru di-build (bisa menggunakan -d untuk jalan di background)
-sudo docker compose up -d app
+docker compose up -d app
 
 # Clear semua cache Laravel
 docker compose exec app php artisan config:clear

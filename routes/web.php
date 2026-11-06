@@ -20,6 +20,10 @@ use App\Http\Controllers\Google\GmailExplorerController;
 use App\Http\Controllers\Google\GmailInboxController;
 use Illuminate\Support\Facades\Route;
 
+// ── Public Legal Pages (Google OAuth & Branding Compliance) ────────────────
+Route::view('/privacy-policy', 'legal.privacy-policy')->name('legal.privacy');
+Route::view('/terms', 'legal.terms')->name('legal.terms');
+
 // ── Auth (Guest only) ────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

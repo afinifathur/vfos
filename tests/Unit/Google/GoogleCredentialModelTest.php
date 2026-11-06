@@ -72,4 +72,26 @@ class GoogleCredentialModelTest extends TestCase
 
         $this->assertEquals('Disconnected', $credential->statusLabel());
     }
+
+    public function test_repeated_is_expired_calls_do_not_mutate_expires_at(): void
+    {
+        $credential = new GoogleCredential();
+        $originalExpiry = Carbon::now()->addMinutes(10);
+        $credential->expires_at = $originalExpiry;
+
+        $timestampBefore = $credential->expires_at->timestamp;
+
+        // Call isExpired() 10 times consecutively
+        for ($i = 0; $i < 10; $i++) {
+            $credential->isExpired();
+        }
+
+        $timestampAfter = $credential->expires_at->timestamp;
+
+        $this->assertEquals(
+            $timestampBefore,
+            $timestampAfter,
+            'isExpired() must never mutate the in-memory expires_at Carbon instance.'
+        );
+    }
 }

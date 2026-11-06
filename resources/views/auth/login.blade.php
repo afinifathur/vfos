@@ -230,9 +230,14 @@
             </form>
 
             <!-- Footer -->
-            <p class="text-center text-xs text-slate-600 mt-6">
-                vFOS &copy; {{ date('Y') }} &nbsp;·&nbsp; Personal Finance OS
-            </p>
+            <div class="text-center text-xs text-slate-500 mt-6 space-y-2">
+                <p>vFOS &copy; {{ date('Y') }} &nbsp;·&nbsp; Personal Finance OS</p>
+                <div class="flex items-center justify-center gap-3 text-slate-400">
+                    <a href="{{ route('legal.privacy') }}" class="hover:text-blue-400 underline transition-colors">Privacy Policy</a>
+                    <span>·</span>
+                    <a href="{{ route('legal.terms') }}" class="hover:text-blue-400 underline transition-colors">Terms of Service</a>
+                </div>
+            </div>
         </div>
 
         <!-- Decorative bottom badge -->

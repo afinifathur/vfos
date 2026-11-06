@@ -99,9 +99,22 @@ Log-Info ""
 Log-Info ">>> SINKRONISASI DATABASE: $ProdDbName"
 
 # 1. Export di Server (Direct Docker Exec)
-Log-Info "Mengekspor $ProdDbName dari container $ProdContainerName di server..."
-# Check jika server butuh sudo docker atau tidak, biasanya tidak jika user dalam group docker
-$exportCmd = "docker exec -i $ProdContainerName mysqldump -u$ProdDbUser -p$ProdDbPass $ProdDbName > $serverBackupPath"
+Log-Info "Mengekspor $ProdDbName dari container $ProdContainerName di server (mengecualikan google_credentials & app_settings)..."
+
+# ==============================================================================
+# SAFE EXCLUSION: google_credentials & app_settings
+# ==============================================================================
+# ALASAN:
+# 1. Production dan Laragon Lokal memiliki APP_KEY enkripsi Laravel yang BERBEDA.
+# 2. Tabel `google_credentials` menyimpan refresh_token & access_token terenkripsi.
+# 3. Tabel `app_settings` menyimpan google_client_secret terenkripsi.
+# 4. Jika di-dump dan di-import ke lokal, Laravel lokal gagal decrypt (DecryptException).
+# 5. Dengan `--ignore-table`, mysqldump TIDAK menghasilkan `DROP TABLE` maupun `INSERT`
+#    untuk kedua tabel ini, sehingga data lokal yang terenkripsi dengan APP_KEY lokal
+#    tetap aman dan tidak terhapus / tertimpa saat import.
+# ==============================================================================
+$ignoredTables = "--ignore-table=$ProdDbName.google_credentials --ignore-table=$ProdDbName.app_settings"
+$exportCmd = "docker exec -i $ProdContainerName mysqldump -u$ProdDbUser -p$ProdDbPass $ignoredTables $ProdDbName > $serverBackupPath"
 
 ssh $ServerSSH $exportCmd 2>&1 | Add-Content -Path $DetailedLogFile
 if ($LASTEXITCODE -ne 0) {
